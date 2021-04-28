@@ -1,7 +1,8 @@
 <?php
 require_once 'config.php';
-require_once 'JsonRpcClient.php';
+require_once '../app/Helpers/JsonRpcClient.php';
 
+use App\Helpers\JsonRpcClient;
 
 $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
 $token = $loginClient->getToken(COMPANY_LOGIN, API_KEY);
@@ -40,18 +41,26 @@ exit();
 
 switch ($_GET['action']) {
     case'init':
-        $services = $client->getEventList();
+        // $services = $client->getEventList();
 
 //$providers = $client->getUnitList();
+        $eventId = $_GET['eventId'];
+        $firstWorkingDay = $client->getFirstWorkingDay(['unit_group_id' => 1, 'event_id' => $eventId]);
 
-        $firstWorkingDay = $client->getFirstWorkingDay(['unit_group_id' => 1, 'event_id' => 1]);
+        $date = new DateTime();
+        $date->modify('last day of this month');
+        $dateTo = $date->format('Y-m-d');
 
-        $dateFrom = '2021-04-01';
-        $dateTo = '2021-04-31';
-        $serviceId = 1;
+        $date->modify('first day of this month');
+        $dateFrom = $date->format('Y-m-d');
+
+
+        //   $dateFrom = '2021-04-01';
+        //   $dateTo = '2021-04-31';
+        //     $serviceId = 1;
         $performerId = 1;
         $qty = 1;
-        $availableTime = $client->getStartTimeMatrix($firstWorkingDay, $dateTo, $serviceId, $performerId, $qty);
+        $availableTime = $client->getStartTimeMatrix($firstWorkingDay, $dateTo, $eventId, $performerId, $qty);
 
 
         $allAwaliableDates = [];
@@ -164,8 +173,8 @@ switch ($_GET['action']) {
             $bookingsInfo = $client->book($eventId, $unitId, $date, $time, $clientData, $additionalFields);
 
 
-           // https://testrams-test.chargebee.com/hosted_pages/plans/recuring-cleaning
-          //  https://testrams-test.chargebee.com/hosted_pages/plans/one-time-cleaning
+            // https://testrams-test.chargebee.com/hosted_pages/plans/recuring-cleaning
+            //  https://testrams-test.chargebee.com/hosted_pages/plans/one-time-cleaning
 
             /*
             stdClass Object

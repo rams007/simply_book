@@ -1,3 +1,25 @@
+<?php
+require_once 'config.php';
+require_once '../app/Helpers/JsonRpcClient.php';
+
+use App\Helpers\JsonRpcClient;
+
+$loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+$token = $loginClient->getToken(COMPANY_LOGIN, API_KEY);
+$client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
+    'headers' => array(
+        'X-Company-Login: ' . COMPANY_LOGIN,
+        'X-Token: ' . $token
+    )
+));
+
+
+$services = $client->getEventList();
+//print_r($services);
+
+?>
+
+
 <!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -7,114 +29,44 @@
     <link href='bootstrap/css/bootstrap.css' rel='stylesheet'/>
     <script src='bootstrap/js/bootstrap.min.js'></script>
     <script src='lib/main.js'></script>
-
-
-    <style>
-
-
-        @font-face {
-            font-family: fcicons;
-            src: url("data:application/x-font-ttf;charset=utf-8;base64,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") format('truetype');
-            font-weight: 400;
-            font-style: normal
-        }
-
-
-        @import url('https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap');
-
-        * {
-            font-family: 'Petit Formal Script', cursive;
-        }
-        .day-off {
-            opacity: .4;
-            color: #81889a;
-        }
-
-        .fc-day-today .fc-daygrid-day-top {
-            background-color: hsl(310, 93%, 88%);
-            border-radius: 50%;
-        }
-
-        td.fc-day {
-            min-width: 30px;
-            line-height: 30px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        body {
-            margin: 40px 10px;
-            padding: 0;
-            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
-            font-size: 14px;
-        }
-
-        #calendar {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        table.fc-col-header {
-            width: 100% !important;
-        }
-
-        table.fc-scrollgrid, table.fc-scrollgrid-sync-table {
-            width: 100% !important;
-        }
-
-        .fc-daygrid-day-top {
-            width: 30px;
-            margin: auto;
-        }
-
-
-        .section {
-            border-radius: 5px;
-            box-shadow: 0 0 16px 5px rgb(0 0 0 / 5%);
-            width: 500px;
-            margin: auto;
-            padding: 40px;
-        }
-
-        .fc-toolbar-title {
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .fc-header-toolbar {
-            display: flex;
-            justify-content: center;
-            align-items: baseline;
-
-        }
-
-        a.fc-col-header-cell-cushion, a.fc-daygrid-day-number {
-            color: black;
-        }
-
-        .fc-button-primary{
-            padding-left: 15px;
-            padding-right: 15px;
-            background-color: transparent;
-            border: none;
-        }
-
-        .fc-myCustomNextButton-button:before{
-            font-family: fcicons;
-            content: "\e901";
-        }
-
-        .fc-myCustomPrevButton-button:before{
-            font-family: fcicons;
-            content: "\e900";
-        }
-
-    </style>
+    <link href='css/custom.css' rel='stylesheet'/>
 
 
     <script>
 
-        var allowedDates = ["2021-04-23", "2021-04-25"];
+        function showCalendar(eventId) {
+            console.log(eventId);
+            $("#loader").show();
+            $.get("handler.php?action=init&eventId=" + eventId, function (data) {
+                console.log(data);
+                $("#loader").hide();
+                data.avaliableDates.forEach(curDate => {
+
+                    if (allowedDates.indexOf(curDate) === -1) {
+                        allowedDates.push(curDate);
+
+                    }
+
+                });
+
+                // data.avaliableTimes.forEach(curElement=>{
+                //console.log(curElement);
+                //   allowedTime[]
+                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
+                console.log(allowedTime);
+
+                //    });
+
+                //    allowedDates = data.avaliableDates;
+
+                $("#eventLists").hide();
+                $("#calendarBlock").show();
+                LoadCalendar();
+            });
+        }
+
+
+        var allowedDates = [];
         var calendar = null;
         var allowedTime = {};
         var selectedDay = null;
@@ -134,13 +86,46 @@
                     myCustomNextButton: {
                         text: '',
                         click: function () {
-                            calendar.next();
+                            //  calendar.next();
+                            $("#loader").show();
+                            console.log(calendar.getDate());
+
+                            var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
+                            $.get("handler.php?action=next&date=" + calendarTime, function (data) {
+                                console.log(data);
+                                $("#loader").hide();
+                                data.avaliableDates.forEach(curDate => {
+
+                                    if (allowedDates.indexOf(curDate) === -1) {
+                                        allowedDates.push(curDate);
+                                    }
+
+                                });
+                                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
+                                console.log(allowedTime);
+                                calendar.next();
+                            });
+
+
                         }
                     },
                     myCustomPrevButton: {
                         text: '',
                         click: function () {
-                            calendar.prev();
+                            $("#loader").show();
+                            console.log(calendar.getDate());
+                            $.get("handler.php?action=prev&date=" + calendar.getDate().getTime(), function (data) {
+                                console.log(data);
+                                $("#loader").hide();
+                                data.avaliableDates.forEach(curDate => {
+                                    if (allowedDates.indexOf(curDate) === -1) {
+                                        allowedDates.push(curDate);
+                                    }
+                                });
+                                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
+                                console.log(allowedTime);
+                                calendar.prev();
+                            });
                         }
                     },
 
@@ -229,10 +214,7 @@
             calendar.render();
 
 
-
         }
-
-
 
 
         function FirstCalendar() {
@@ -242,79 +224,55 @@
         document.addEventListener('DOMContentLoaded', FirstCalendar);
 
 
-
-
-
         $(document).ready(function () {
 
-            $.get("handler.php?action=init", function (data) {
-                console.log(data);
-                data.avaliableDates.forEach(curDate => {
 
-                    if (allowedDates.indexOf(curDate) === -1) {
-                        allowedDates.push(curDate);
+            /*
+                        $("#next").click(function () {
 
-                    }
+                            console.log(calendar.getDate());
 
-                });
+                            var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
+                            $.get("handler.php?action=next&date=" + calendarTime, function (data) {
+                                console.log(data);
+                                console.log(data);
+                                data.avaliableDates.forEach(curDate => {
 
-                // data.avaliableTimes.forEach(curElement=>{
-                //console.log(curElement);
-                //   allowedTime[]
-                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                console.log(allowedTime);
+                                    if (allowedDates.indexOf(curDate) === -1) {
+                                        allowedDates.push(curDate);
+                                    }
 
-                //    });
+                                });
+                                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
+                                console.log(allowedTime);
+                                calendar.next();
+                            });
+                        })
 
-                //    allowedDates = data.avaliableDates;
-                LoadCalendar();
-            });
+                        $("#prev").click(function () {
 
-            $("#next").click(function () {
-
-                console.log(calendar.getDate());
-
-                var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
-                $.get("handler.php?action=next&date=" + calendarTime, function (data) {
-                    console.log(data);
-                    console.log(data);
-                    data.avaliableDates.forEach(curDate => {
-
-                        if (allowedDates.indexOf(curDate) === -1) {
-                            allowedDates.push(curDate);
-                        }
-
-                    });
-                    allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                    console.log(allowedTime);
-                    calendar.next();
-                });
-            })
-
-            $("#prev").click(function () {
-
-                console.log(calendar.getDate());
-                $.get("handler.php?action=prev&date=" + calendar.getDate().getTime(), function (data) {
-                    console.log(data);
-                    console.log(data);
-                    data.avaliableDates.forEach(curDate => {
-                        if (allowedDates.indexOf(curDate) === -1) {
-                            allowedDates.push(curDate);
-                        }
-                    });
-                    allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                    console.log(allowedTime);
-                    calendar.prev();
-                });
-            })
-
+                            console.log(calendar.getDate());
+                            $.get("handler.php?action=prev&date=" + calendar.getDate().getTime(), function (data) {
+                                console.log(data);
+                                console.log(data);
+                                data.avaliableDates.forEach(curDate => {
+                                    if (allowedDates.indexOf(curDate) === -1) {
+                                        allowedDates.push(curDate);
+                                    }
+                                });
+                                allowedTime = Object.assign(allowedTime, data.avaliableTimes);
+                                console.log(allowedTime);
+                                calendar.prev();
+                            });
+                        })
+            */
 
             $('#StartBooking').click(function () {
 
                 var postData = {
                     selectedDay: selectedDay,
-                    selectedTime: $('#avaliableTimes').val(),
-                    countRepeat: $('#countRepeat').val()
+                    selectedTime: $('#avaliableTimes').val()
+                    //     countRepeat: $('#countRepeat').val()
                 };
                 $.post("handler.php?action=startBooking", postData).done(function (data) {
                     console.log(data);
@@ -324,21 +282,6 @@
             })
 
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     </script>
@@ -520,7 +463,173 @@
 </head>
 <body>
 
-<div class="section">
+
+<div id="eventLists" class="section" style="    margin-bottom: 40px;">
+    <div class="row">
+        <div id="sb_booking_content">
+            <div>
+                <div class="service-step step-content content-mode-list" id="sb_service_step_container">
+
+                    <?php foreach ($services as $service) {
+                        if ($service->id == EXTENDED_SERVICE_ID) {
+                            continue;
+                        }
+
+                        ?>
+
+                        <div class="service-item item panel">
+
+                            <div class="mobile-title">
+                                <h4 class="title">
+                                    <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                       href="#service1" aria-expanded="false" aria-controls="service1"
+                                       class="collapsed">
+                                        <?php echo $service->name; ?>
+                                    </a>
+                                </h4>
+                            </div>
+
+
+                            <div class="one-line no-image">
+                                <div class="content">
+                                    <h4 class="cap title">
+                                        <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                           href="#service1" aria-expanded="false" aria-controls="service1"
+                                           class="collapsed">
+                                            <?php echo $service->name; ?>
+                                        </a>
+                                    </h4>
+
+                                    <div class="info-bar bar-service">
+                                        <div class="d-flex">
+
+                                            <div class="bar-flex-item price price">
+                                                <i class="fal fa-wallet ico"></i>
+                                                <span class="txt">$ <?php echo $service->price_with_tax; ?></span>
+                                            </div>
+
+                                            <div class="bar-flex-item sb_group_booking_count"></div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-bar has-read-more">
+                                    <div class="btn-round-mask">
+                                        <button class="btn select custom"
+                                                onClick="showCalendar(<?php echo $service->id; ?>)">Select
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    <?php } ?>
+
+
+                    <!--
+                                        <div class="service-item item panel">
+
+                                            <div class="mobile-title">
+                                                <h4 class="title">
+                                                    <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                                       href="#service6" aria-expanded="false" aria-controls="service6" class="collapsed">
+                                                        Monthly Cleaning (2 Hours)
+                                                    </a>
+                                                </h4>
+                                            </div>
+
+
+                                            <div class="one-line no-image">
+                                                <div class="content">
+                                                    <h4 class="cap title">
+                                                        <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                                           href="#service6" aria-expanded="false" aria-controls="service6"
+                                                           class="collapsed">
+                                                            Monthly Cleaning (2 Hours)
+                                                        </a>
+                                                    </h4>
+
+                                                    <div class="info-bar bar-service">
+                                                        <div class="d-flex">
+
+                                                            <div class="bar-flex-item price price">
+                                                                <i class="fal fa-wallet ico"></i>
+                                                                <span class="txt">$100.00</span>
+                                                            </div>
+
+                                                            <div class="bar-flex-item sb_group_booking_count"></div>
+
+                                                            <div class="bar-flex-item recurring-block">
+                                                                <div class="service-bar">
+                                                                    <div class="service-bar__wrapper">
+                                                                        <div class="service-bar__icon">
+                                        <span class="icon icon-reccuring ">
+                                            <i class="fa fa-sync"></i>
+                                        </span>
+                                                                        </div>
+                                                                        <div class="service-bar__text">
+                                                                            Recurring
+                                                                        </div>
+                                                                        <div class="service-bar__recurring-hint">
+                                                                            <div class="dropdown recurring-hint__dropdown">
+                                                                                <button class="recurring-hint__btn" type="button"
+                                                                                        id="recurring-hint__6" data-toggle="dropdown"
+                                                                                        aria-haspopup="true" aria-expanded="false">
+                                                                                    <i class="fal ico fa-info-circle"></i>
+                                                                                </button>
+                                                                                <div class="dropdown-menu recurring-hint__dropdown-menu"
+                                                                                     aria-labelledby="recurring-hint__6">
+                                                                                    <p class="recurring-hint__dropdown-txt">6 sessions</p>
+                                                                                    <p class="recurring-hint__dropdown-txt">Repeat every 28
+                                                                                        days</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="btn-bar has-read-more">
+                                                    <div class="btn-round-mask">
+                                                        <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="wrap-collapse-content collapse" id="service6" aria-expanded="false">
+                                                <div class="collapse-content">
+
+                                                    <p>Monthly cleaning<br></p>
+
+                                                    <div class="btn-bar btn-bar-full-info">
+                                                        <a class="btn btn-hide collapsed" role="button" data-toggle="collapse"
+                                                           data-parent="#sb_service_step_container" href="#service6" aria-expanded="false"
+                                                           aria-controls="service6">
+                                                            <span class="hide-txt">Show less</span>
+                                                        </a>
+
+                                                        <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="calendarBlock" style="display: none" class="section">
     <div id='calendar'></div>
 </div>
 
@@ -585,40 +694,40 @@
                     <label for="avaliableTimes">Avaliable times</label>
                     <select class="form-control" id="avaliableTimes"></select>
                 </div>
+                <!--
+                                <div class="form-group">
+                                    <label for="countRepeat">Count repeat</label>
+                                    <select class="form-control" id="countRepeat">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                        <option value="7">7</option>
+                                        <option value="8">8</option>
+                                        <option value="9">9</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
 
-                <div class="form-group">
-                    <label for="countRepeat">Count repeat</label>
-                    <select class="form-control" id="countRepeat">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
-                        <option value="17">17</option>
-                        <option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-
-                    </select>
-                </div>
-
+                                    </select>
+                                </div>
+                -->
 
                 <button id="StartBooking" type="button" class="btn btn-primary">select</button>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+              <!--  <button type="button" class="btn btn-primary">Save changes</button>  -->
             </div>
         </div>
     </div>
@@ -626,6 +735,15 @@
 
 </div>
 
+
+<div id="loader" style="
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display:none;
+">
+    <img src="img/ajax-loader.gif" style="width: 70px;">
+</div>
 
 </body>
 </html>
