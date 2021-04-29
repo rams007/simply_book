@@ -58,9 +58,9 @@ table.fc-scrollgrid, table.fc-scrollgrid-sync-table {
 .section {
     border-radius: 5px;
     box-shadow: 0 0 16px 5px rgb(0 0 0 / 5%);
-    width: 500px;
+   /* width: 500px;*/
     margin: auto;
-    padding: 40px;
+ /*   padding: 40px;*/
 }
 
 .fc-toolbar-title {
@@ -717,4 +717,41 @@ a.fc-col-header-cell-cushion, a.fc-daygrid-day-number {
 
 .fc-view-harness{
     min-height:200px;
+}
+
+@media (max-width: 767px){
+   .item.panel .mobile-title {
+        display: block;
+    }
+}
+.step-content .item.panel .content {
+    min-height: auto;
+}
+
+
+
+ .step-content .item.panel .content .info-bar .badge .text, .step-content .item.panel .content .info-bar .price .txt {
+    font-size: 14px;
+}
+
+ .item.panel .info-bar .bar-flex-item.price .txt {
+    font-size: 18px;
+    font-weight: 600;
+}
+ .item.panel .info-bar .bar-flex-item .txt {
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+ .step-content .item.panel .info-bar .price .txt {
+     color: #494949;
+ }
+
+
+
+@media (max-width: 359px){
+    .item.panel .btn-bar .btn.select {
+        min-width: 130px;
+        width: auto;
+    }
 }

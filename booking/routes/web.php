@@ -1,5 +1,4 @@
 <?php
-
 /** @var \Laravel\Lumen\Routing\Router $router */
 
 /*
@@ -14,9 +13,15 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+
+return redirect ("/starter.php");
 });
 
-$router->get('/initCalendar', function () use ($router) {
-    return $router->app->version();
-});
+$router->get('/initCalendar', "MainController@initCalendar");
+$router->get('/nextMonth', "MainController@nextMonth");
+$router->get('/prevMonth', "MainController@prevMonth");
+$router->post('/startBooking', "MainController@startBooking");
+$router->get('/getCustomFields', "MainController@getCustomFields");
+
+
+
