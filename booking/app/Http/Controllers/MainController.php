@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CreatedBookings;
 use DateTime;
 use Illuminate\Http\Request;
 use App\Helpers\JsonRpcClient;
@@ -119,7 +120,8 @@ class MainController extends Controller
     }
 
 
-    public function getCustomFields(Request $request){
+    public function getCustomFields(Request $request)
+    {
         $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
         $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
         $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
@@ -130,14 +132,15 @@ class MainController extends Controller
         ));
         $eventId = $request->eventId;
         $allAdditionalFields = $client->getAdditionalFields($eventId);
-        return response()->json(['allAdditionalFields' => $allAdditionalFields, ]);
+        return response()->json(['allAdditionalFields' => $allAdditionalFields,]);
 
 
     }
 
-    public function startBooking (Request $request){
+    public function startBooking(Request $request)
+    {
 
-
+        $errorMsg = '';
         $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
         $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
         $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
@@ -148,26 +151,129 @@ class MainController extends Controller
         ));
 
 
-        $additionalFields = array();
+        parse_str($request->formData, $formData);
+        //    print_r($formData);
+        $additionalFields = $formData;
 
         $clientData = array(
-            'name' => 'Рома Говтвян',
-            'email' => 'sramsiks@gmail.com',
-            'phone' => '+380968231385'
+            'name' => $request->username,
+            'email' => $request->email,
+            'phone' => $request->phone
         );
 
-        $eventId = 1;
+
+        //check if client exist
+
+
+        $loginClientAdmin = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+        $tokenAdmin = $loginClientAdmin->getUserToken(env('COMPANY_LOGIN'), env('USER_LOGIN'), env('USER_PASSWORD'));
+
+
+        $clientAdmin = new JsonRpcClient('https://user-api.simplybook.me' . '/admin/', array(
+            'headers' => array(
+                'X-Company-Login: ' . env('COMPANY_LOGIN'),
+                'X-User-Token: ' . $tokenAdmin
+            )
+        ));
+
+
+        $users = $clientAdmin->getClientList($request->email, null);
+        if (!empty($users)) {
+            $clientId = $users[0]->id;
+            $ourClient = $clientAdmin->getClientInfo($clientId);
+
+            $clientData['client_id'] = $clientId;
+            $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
+            $clientData['client_sign'] = $client_sign;
+        } else {
+
+            $clientId = $clientAdmin->addClient($clientData, false);
+            $ourClient = $clientAdmin->getClientInfo($clientId);
+            $clientData['client_id'] = $clientId;
+            $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
+            $clientData['client_sign'] = $client_sign;
+
+        }
+
+        $t = 1;
+
+
+        $eventId = $request->eventId;
         $unitId = 1;
-        $countRepeat = $_POST['countRepeat']; // @todo search plan for this count
-        $date = $_POST['selectedDay'];
-        $time = $_POST['selectedTime'];
+        $date = $request->selectedDay;
+        $time = $request->selectedTime;
         try {
             $bookingsInfo = $client->book($eventId, $unitId, $date, $time, $clientData, $additionalFields);
+
+            $t = 1;
+            $bookIdList = "";
+            try {
+                if (empty($errorMsg)) {
+
+                    foreach ($bookingsInfo->bookings as $booking) {
+
+                        $record = CreatedBookings::create([
+                            'booking_id' => $booking->id,
+                            'event_id' => $booking->event_id,
+                            'unit_id' => $booking->unit_id,
+                            'client_id' => $booking->client_id,
+                            'client_hash' => $booking->client_hash,
+                            'start_date_time' => $booking->start_date_time,
+                            'end_date_time' => $booking->end_date_time,
+                            'time_offset' => $booking->time_offset,
+                            'is_confirmed' => $booking->is_confirmed,
+                            'require_payment' => $booking->require_payment,
+                            'code' => $booking->code,
+                            'hash' => $booking->hash,
+                            'status' => 'new'
+                        ]);
+
+                        $bookIdList .= $record->id . ",";
+                    }
+                }
+                $t = 2;
+            } catch (\Throwable $e) {
+                $errorMsg = $e->getMessage();
+                $t = 3;
+            }
+
+            //HARDCODED ID of events and links to chargebee
+            $hostedPageUrl = "";
+            switch ($eventId) {
+
+                case 1:
+                    $hostedPageUrl = "https://testrams-test.chargebee.com/hosted_pages/plans/one-time-cleaning";
+                    break;
+
+                case 2:
+                    $hostedPageUrl = "https://testrams-test.chargebee.com/hosted_pages/plans/daily_cleaning";
+                    break;
+                case 4:
+                    $hostedPageUrl = "https://testrams-test.chargebee.com/hosted_pages/plans/recuring-cleaning";
+                    break;
+
+                case 5:
+                    $hostedPageUrl = "https://testrams-test.chargebee.com/hosted_pages/plans/be_weekly_cleaning";
+                    break;
+
+                case 6:
+                    $hostedPageUrl = "https://testrams-test.chargebee.com/hosted_pages/plans/monthly_weekly_cleaning";
+                    break;
+
+            }
+
+            if (empty($hostedPageUrl)) {
+                $errorMsg = "Unknown eventId";
+            } else {
+
+                $hostedPageUrl .= "?subscription[cf_bookid]=" . $bookIdList;
+            }
+
 
             //  https://testrams-test.chargebee.com/hosted_pages/plans/one-time-cleaning
             // https://testrams-test.chargebee.com/hosted_pages/plans/recuring-cleaning
             //https://testrams-test.chargebee.com/hosted_pages/plans/monthly_weekly_cleaning
-           // https://testrams-test.chargebee.com/hosted_pages/plans/daily_cleaning
+            // https://testrams-test.chargebee.com/hosted_pages/plans/daily_cleaning
             // https://testrams-test.chargebee.com/hosted_pages/plans/be_weekly_cleaning
             /*
             stdClass Object
@@ -249,9 +355,9 @@ class MainController extends Controller
 
 
             */
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             echo $e->getMessage();
-
+            $errorMsg = $e->getMessage();
             if ($e->getMessage() == 'Request error: Selected time start is not available') {
                 //we need another date
             }
@@ -260,12 +366,13 @@ class MainController extends Controller
 
         $t = 1;
 
+        if (empty($errorMsg)) {
+            $IsError = false;
+        } else {
+            $IsError = true;
+        }
 
-
-
-
-
-
+        return response()->json(['error' => $IsError, 'msg' => $errorMsg, 'hostedPageUrl' => $hostedPageUrl]);
 
 
     }

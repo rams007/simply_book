@@ -37,6 +37,7 @@ $services = $client->getEventList();
 
         function showCalendar(eventId) {
             console.log(eventId);
+            $("#eventId").val(eventId);
             $("#loader").show();
             $.get("initCalendar?eventId=" + eventId, function (data) {
                 console.log(data);
@@ -55,6 +56,55 @@ $services = $client->getEventList();
                 $("#calendarBlock").show();
                 LoadCalendar();
             });
+
+            $.get("customFields?eventId=" + eventId, function (data) {
+                console.log(data);
+
+                data.allAdditionalFields.forEach(field => {
+
+                    if (field.value === null) {
+                        field.value = '';
+                    }
+
+                    if (field.type === "text") {
+                        $("#additionalFields").append(' <div class="form-group">\n' +
+                            '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                            '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" >\n' +
+                            '                        </div>');
+
+
+                    } else if (field.type === 'select') {
+
+                        var htmlSelect = '<div class="form-group">\n' +
+                            '    <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                            '    <select class="form-control" id="field' + field.id + '"  name="' + field.name + '" >\n';
+
+
+                        var listValues = field.values.split(',');
+
+                        listValues.forEach(val => {
+
+                            if (field.default == val) {
+                                htmlSelect += '      <option value="' + val + '" selected>' + val + '</option>\n';
+                            } else {
+                                htmlSelect += '      <option value="' + val + '">' + val + '</option>\n';
+                            }
+                        })
+
+                        htmlSelect += '    </select>\n' +
+                            '  </div>';
+                        $("#additionalFields").append(htmlSelect);
+
+                    } else if (field.type === 'textarea') {
+                        $("#additionalFields").append(' <div class="form-group">\n' +
+                            '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                            '                            <textarea  name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" ></textarea>\n' +
+                            '                        </div>');
+                    }
+                });
+
+            });
+
         }
 
 
@@ -150,7 +200,7 @@ $services = $client->getEventList();
 
                     if (allowed) {
 
-                        $('#myModal').modal();
+                        // $('#myModal').modal();
                         selectedDay = arg.startStr;
                         var allowedTimeForDay = allowedTime[selectedDay];
                         $('#avaliableTimes').html('');
@@ -223,11 +273,23 @@ $services = $client->getEventList();
 
                 var postData = {
                     selectedDay: selectedDay,
-                    selectedTime: $('#avaliableTimes').val()
+                    selectedTime: $('#avaliableTimes').val(),
+                    email: $('#email').val(),
+                    username: $('#username').val(),
+                    phone: $('#phone').val(),
+                    eventId: $("#eventId").val(),
+                    formData: $("#addiTionalFields").serialize()
                     //     countRepeat: $('#countRepeat').val()
                 };
-                $.post("handler.php?action=startBooking", postData).done(function (data) {
+                $.post("startBooking", postData).done(function (data) {
                     console.log(data);
+                    if (data.error === true) {
+                        alert(data.msg);
+
+                    } else {
+                        window.location.href = data.hostedPageUrl;
+                    }
+
                 });
 
 
@@ -417,131 +479,135 @@ $services = $client->getEventList();
 
 <div class="wrapper">
 
-<div class="row">
-    <div class="col-sm-12">
+    <div class="row">
+        <div class="col-sm-12">
 
-        <div id="eventLists" class="section" style="    margin-bottom: 40px;">
-            <div class="row">
-                <div id="sb_booking_content">
-                    <div>
-                        <div class="service-step step-content content-mode-list" id="sb_service_step_container">
+            <div id="eventLists" class="section" style="    margin-bottom: 40px;">
+                <div class="row">
+                    <div id="sb_booking_content">
+                        <div>
+                            <div class="service-step step-content content-mode-list" id="sb_service_step_container">
 
-                            <?php foreach ($services as $service) {
-                                if ($service->id == EXTENDED_SERVICE_ID) {
-                                    continue;
-                                }
+                                <?php foreach ($services as $service) {
+                                    if ($service->id == EXTENDED_SERVICE_ID) {
+                                        continue;
+                                    }
 
-                                ?>
+                                    ?>
 
-                                <div class="service-item item panel">
+                                    <div class="service-item item panel">
 
-                                    <div class="mobile-title">
-                                        <h4 class="title">
-                                            <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
-                                               href="#service1" aria-expanded="false" aria-controls="service1"
-                                               class="collapsed">
-                                                <?php echo $service->name; ?>
-                                            </a>
-                                        </h4>
-                                    </div>
-
-
-                                    <div class="one-line no-image">
-                                        <div class="content">
-                                            <h4 class="cap title">
-                                                <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                        <div class="mobile-title">
+                                            <h4 class="title">
+                                                <a role="button" data-toggle="collapse"
+                                                   data-parent="#sb_service_step_container"
                                                    href="#service1" aria-expanded="false" aria-controls="service1"
                                                    class="collapsed">
                                                     <?php echo $service->name; ?>
                                                 </a>
                                             </h4>
+                                        </div>
 
-                                            <div class="info-bar bar-service">
-                                                <div class="d-flex">
 
-                                                    <div class="bar-flex-item price price">
-                                                        <i class="fal fa-wallet ico"></i>
-                                                        <span class="txt">$ <?php echo $service->price_with_tax; ?></span>
+                                        <div class="one-line no-image">
+                                            <div class="content">
+                                                <h4 class="cap title">
+                                                    <a role="button" data-toggle="collapse"
+                                                       data-parent="#sb_service_step_container"
+                                                       href="#service1" aria-expanded="false" aria-controls="service1"
+                                                       class="collapsed">
+                                                        <?php echo $service->name; ?>
+                                                    </a>
+                                                </h4>
+
+                                                <div class="info-bar bar-service">
+                                                    <div class="d-flex">
+
+                                                        <div class="bar-flex-item price price">
+                                                            <i class="fal fa-wallet ico"></i>
+                                                            <span
+                                                                class="txt">$ <?php echo $service->price_with_tax; ?></span>
+                                                        </div>
+
+                                                        <div class="bar-flex-item sb_group_booking_count"></div>
+
                                                     </div>
+                                                </div>
+                                            </div>
 
-                                                    <div class="bar-flex-item sb_group_booking_count"></div>
-
+                                            <div class="btn-bar has-read-more">
+                                                <div class="btn-round-mask">
+                                                    <a class="btn select custom"
+                                                       onClick="showCalendar(<?php echo $service->id; ?>)">Select
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="btn-bar has-read-more">
-                                            <div class="btn-round-mask">
-                                                <a class="btn select custom"
-                                                        onClick="showCalendar(<?php echo $service->id; ?>)">Select
-                                                </a>
-                                            </div>
-                                        </div>
+
                                     </div>
 
 
-                                </div>
+                                <?php } ?>
 
 
-                            <?php } ?>
+                                <!--
+                                                    <div class="service-item item panel">
 
-
-                            <!--
-                                                <div class="service-item item panel">
-
-                                                    <div class="mobile-title">
-                                                        <h4 class="title">
-                                                            <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
-                                                               href="#service6" aria-expanded="false" aria-controls="service6" class="collapsed">
-                                                                Monthly Cleaning (2 Hours)
-                                                            </a>
-                                                        </h4>
-                                                    </div>
-
-
-                                                    <div class="one-line no-image">
-                                                        <div class="content">
-                                                            <h4 class="cap title">
+                                                        <div class="mobile-title">
+                                                            <h4 class="title">
                                                                 <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
-                                                                   href="#service6" aria-expanded="false" aria-controls="service6"
-                                                                   class="collapsed">
+                                                                   href="#service6" aria-expanded="false" aria-controls="service6" class="collapsed">
                                                                     Monthly Cleaning (2 Hours)
                                                                 </a>
                                                             </h4>
+                                                        </div>
 
-                                                            <div class="info-bar bar-service">
-                                                                <div class="d-flex">
 
-                                                                    <div class="bar-flex-item price price">
-                                                                        <i class="fal fa-wallet ico"></i>
-                                                                        <span class="txt">$100.00</span>
-                                                                    </div>
+                                                        <div class="one-line no-image">
+                                                            <div class="content">
+                                                                <h4 class="cap title">
+                                                                    <a role="button" data-toggle="collapse" data-parent="#sb_service_step_container"
+                                                                       href="#service6" aria-expanded="false" aria-controls="service6"
+                                                                       class="collapsed">
+                                                                        Monthly Cleaning (2 Hours)
+                                                                    </a>
+                                                                </h4>
 
-                                                                    <div class="bar-flex-item sb_group_booking_count"></div>
+                                                                <div class="info-bar bar-service">
+                                                                    <div class="d-flex">
 
-                                                                    <div class="bar-flex-item recurring-block">
-                                                                        <div class="service-bar">
-                                                                            <div class="service-bar__wrapper">
-                                                                                <div class="service-bar__icon">
-                                                <span class="icon icon-reccuring ">
-                                                    <i class="fa fa-sync"></i>
-                                                </span>
-                                                                                </div>
-                                                                                <div class="service-bar__text">
-                                                                                    Recurring
-                                                                                </div>
-                                                                                <div class="service-bar__recurring-hint">
-                                                                                    <div class="dropdown recurring-hint__dropdown">
-                                                                                        <button class="recurring-hint__btn" type="button"
-                                                                                                id="recurring-hint__6" data-toggle="dropdown"
-                                                                                                aria-haspopup="true" aria-expanded="false">
-                                                                                            <i class="fal ico fa-info-circle"></i>
-                                                                                        </button>
-                                                                                        <div class="dropdown-menu recurring-hint__dropdown-menu"
-                                                                                             aria-labelledby="recurring-hint__6">
-                                                                                            <p class="recurring-hint__dropdown-txt">6 sessions</p>
-                                                                                            <p class="recurring-hint__dropdown-txt">Repeat every 28
-                                                                                                days</p>
+                                                                        <div class="bar-flex-item price price">
+                                                                            <i class="fal fa-wallet ico"></i>
+                                                                            <span class="txt">$100.00</span>
+                                                                        </div>
+
+                                                                        <div class="bar-flex-item sb_group_booking_count"></div>
+
+                                                                        <div class="bar-flex-item recurring-block">
+                                                                            <div class="service-bar">
+                                                                                <div class="service-bar__wrapper">
+                                                                                    <div class="service-bar__icon">
+                                                    <span class="icon icon-reccuring ">
+                                                        <i class="fa fa-sync"></i>
+                                                    </span>
+                                                                                    </div>
+                                                                                    <div class="service-bar__text">
+                                                                                        Recurring
+                                                                                    </div>
+                                                                                    <div class="service-bar__recurring-hint">
+                                                                                        <div class="dropdown recurring-hint__dropdown">
+                                                                                            <button class="recurring-hint__btn" type="button"
+                                                                                                    id="recurring-hint__6" data-toggle="dropdown"
+                                                                                                    aria-haspopup="true" aria-expanded="false">
+                                                                                                <i class="fal ico fa-info-circle"></i>
+                                                                                            </button>
+                                                                                            <div class="dropdown-menu recurring-hint__dropdown-menu"
+                                                                                                 aria-labelledby="recurring-hint__6">
+                                                                                                <p class="recurring-hint__dropdown-txt">6 sessions</p>
+                                                                                                <p class="recurring-hint__dropdown-txt">Repeat every 28
+                                                                                                    days</p>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -550,84 +616,101 @@ $services = $client->getEventList();
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        <div class="btn-bar has-read-more">
-                                                            <div class="btn-round-mask">
-                                                                <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                            <div class="btn-bar has-read-more">
+                                                                <div class="btn-round-mask">
+                                                                    <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="wrap-collapse-content collapse" id="service6" aria-expanded="false">
-                                                        <div class="collapse-content">
+                                                        <div class="wrap-collapse-content collapse" id="service6" aria-expanded="false">
+                                                            <div class="collapse-content">
 
-                                                            <p>Monthly cleaning<br></p>
+                                                                <p>Monthly cleaning<br></p>
 
-                                                            <div class="btn-bar btn-bar-full-info">
-                                                                <a class="btn btn-hide collapsed" role="button" data-toggle="collapse"
-                                                                   data-parent="#sb_service_step_container" href="#service6" aria-expanded="false"
-                                                                   aria-controls="service6">
-                                                                    <span class="hide-txt">Show less</span>
-                                                                </a>
+                                                                <div class="btn-bar btn-bar-full-info">
+                                                                    <a class="btn btn-hide collapsed" role="button" data-toggle="collapse"
+                                                                       data-parent="#sb_service_step_container" href="#service6" aria-expanded="false"
+                                                                       aria-controls="service6">
+                                                                        <span class="hide-txt">Show less</span>
+                                                                    </a>
 
-                                                                <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                                    <a class="btn select custom" href="#book/service/6/count/1/provider/1/">Select</a>
+                                                                </div>
                                                             </div>
                                                         </div>
+
                                                     </div>
 
-                                                </div>
-
-                            -->
+                                -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+
         </div>
-
-
-
     </div>
-</div>
     <div class="row">
         <div class="col-sm-12">
 
-<div id="calendarBlock" style="display: none" class="section">
-    <div id='calendar'></div>
-</div>
+            <div id="calendarBlock" style="display: none" class="section">
+                <div id='calendar'></div>
+            </div>
 
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-sm-12">
+
+            <div id="listAvaliableDates" class="section">
+
+                <div class="form-group">
+                    <label for="avaliableTimes">Avaliable times</label>
+                    <select class="form-control" id="avaliableTimes"></select>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-sm-12">
-<div id="calendarBlock" style=" margin-top: 40px; padding:40px" class="section">
-    <div class="row">
+            <div id="formBlock" style=" margin-top: 40px; padding:40px" class="section">
+                <div class="row">
 
-        <form>
-            <div class="form-group">
-                <label for="exampleInputEmail1">Email address</label>
-                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" name="email" class="form-control" id="email"
+                               aria-describedby="emailHelp" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">User Name</label>
+                        <input type="text" name="username" class="form-control" id="username"
+                               placeholder="User name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" name="phone" class="form-control" id="phone" placeholder="Phone">
+                    </div>
+
+                    <input type="hidden" id="eventId">
+                </div>
+                <form id="addiTionalFields">
+                    <div id="additionalFields"></div>
+                </form>
+                <div class="row">
+                    <button id="StartBooking" type="button" class="btn btn-primary">select</button>
+                </div>
+
+
             </div>
-            <div class="form-group">
-                <label for="username">User Name</label>
-                <input type="text" class="form-control" id="username" placeholder="User name">
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="text" class="form-control" id="phone" placeholder="Phone">
-            </div>
-
-
-
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-
-
-
-    </div>
-</div>
         </div>
     </div>
 
@@ -644,51 +727,62 @@ $services = $client->getEventList();
                 </button>
             </div>
             <div class="modal-body">
-
-                <div class="form-group">
-                    <label for="avaliableTimes">Avaliable times</label>
-                    <select class="form-control" id="avaliableTimes"></select>
-                </div>
                 <!--
-                                <div class="form-group">
-                                    <label for="countRepeat">Count repeat</label>
-                                    <select class="form-control" id="countRepeat">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                        <option value="13">13</option>
-                                        <option value="14">14</option>
-                                        <option value="15">15</option>
-                                        <option value="16">16</option>
-                                        <option value="17">17</option>
-                                        <option value="18">18</option>
-                                        <option value="19">19</option>
-                                        <option value="20">20</option>
+                              <div class="form-group">
+                                  <label for="avaliableTimes">Avaliable times</label>
+                                  <select class="form-control" id="avaliableTimes"></sel                             </div>
 
-                                    </select>
-                                </div>
-                -->
+                                              <div class="form-group">
+                                                  <label for="countRepeat">Count repeat</label>
+                                                  <select class="form-control" id="countRepeat">
+                                                      <option value="1">1</option>
+                                                      <option value="2">2</option>
+                                                      <option value="3">3</option>
+                                                      <option value="4">4</option>
+                                                      <option value="5">5</option>
+                                                      <option value="6">6</option>
+                                                      <option value="7">7</option>
+                                                      <option value="8">8</option>
+                                                      <option value="9">9</option>
+                                                      <option value="10">10</option>
+                                                      <option value="11">11</option>
+                                                      <option value="12">12</option>
+                                                      <option value="13">13</option>
+                                                      <option value="14">14</option>
+                                                      <option value="15">15</option>
+                                                      <option value="16">16</option>
+                                                      <option value="17">17</option>
+                                                      <option value="18">18</option>
+                                                      <option value="19">19</option>
+                                                      <option value="20">20</option>
 
-                <button id="StartBooking" type="button" class="btn btn-primary">select</button>
+                                                  </select>
+                                              </div>
+
+
+                <button id="StartBooking" type="button" class="btn btn-primary">select</button>  -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <!--  <button type="button" class="btn btn-primary">Save changes</button>  -->
+                <!--  <button type="button" class="btn btn-primary">Save changes</button>  -->
             </div>
         </div>
     </div>
 
 
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <div id="loader" style="

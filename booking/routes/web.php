@@ -21,7 +21,9 @@ $router->get('/initCalendar', "MainController@initCalendar");
 $router->get('/nextMonth', "MainController@nextMonth");
 $router->get('/prevMonth', "MainController@prevMonth");
 $router->post('/startBooking', "MainController@startBooking");
-$router->get('/getCustomFields', "MainController@getCustomFields");
+$router->get('/customFields', "MainController@getCustomFields");
+
+$router->get('/api/ChargebeeCallback', "CallbackController@ChargebeeCallback");
 
 
 
