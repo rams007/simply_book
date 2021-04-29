@@ -13,18 +13,20 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-'App\Console\Commands\WatchBookingStatus'
+        'App\Console\Commands\WatchBookingStatus',
+        'App\Console\Commands\DeleteUpaidBooking',
     ];
 
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param \Illuminate\Console\Scheduling\Schedule $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        $schedule->command('WatchBookingStatus')->daily()->sendOutputTo(storage_path() . '/logs/cron/WatchBookingStatus.log');
+        $schedule->command('DeleteUpaidBooking')->everyMinute()->sendOutputTo(storage_path() . '/logs/cron/DeleteUpaidBooking.log');;
     }
 
 

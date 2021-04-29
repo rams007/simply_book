@@ -1,0 +1,62 @@
+/*
+	Custom CSS
+	Please make sure your CSS rules are 
+	more particular / have higher priority
+	then other page styles
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Petit+Formal+Script&display=swap');
+.date.prev-or-next-month span,
+.date.prev-or-next-month a {
+	opacity: 0 !important;
+}
+
+* {
+	font-family: 'Petit Formal Script', cursive;
+}
+
+.promotions-letter-flag {
+	display: none;
+}
+
+@media (max-width: 767px) {
+	.service-item .one-line.no-image {
+		flex-flow: row !important;
+	}
+	.wrap-read-more {
+		display: none;
+	}
+}
+
+#sb-main-container #main #sb-timeline #steps #steps-content .step-content .item.panel {
+	width: 100%;
+	align-items: center;
+	padding: 1px 10px;
+	margin-bottom: 20px;
+	border-left: 4px solid;
+	border-radius: 5px;
+	box-shadow: 0 0 16px 5px rgba(0, 0, 0, 0.05);
+}
+
+#sb-main-container #main .invoice-pay-page .table-responsive .invoice-table tbody tr td {
+	padding: 10px 15px 10px;
+	font-size: 14px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	max-width: 350px;
+}
+
+#sb-timeline #steps #steps-content #sb_booking_content .service-item.panel .bar-service .d-flex .time {
+	margin-right: 0;
+	width: 100%;
+	display: none;
+}
+
+#sb_content #sb-timeline #steps #steps-content .datetime-step #sb_dateview_container .top-date-select .calendar .weeks-name .col-md-4 .name.is-holiday {
+	color: hsl(310, 93%, 88%) !important;
+}
+
+#sb_content #sb-timeline #steps #steps-content .datetime-step #sb_dateview_container .top-date-select .calendar .date.selected {
+	background: hsl(310, 93%, 88%) !important;
+}

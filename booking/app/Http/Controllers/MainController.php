@@ -266,7 +266,7 @@ class MainController extends Controller
                 $errorMsg = "Unknown eventId";
             } else {
 
-                $hostedPageUrl .= "?subscription[cf_bookid]=" . $bookIdList;
+                $hostedPageUrl .= "?subscription[cf_bookid]=" . $bookIdList."&customer[email]=".$request->email;
             }
 
 
