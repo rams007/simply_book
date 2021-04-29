@@ -27,7 +27,8 @@ class CreateCreatedBookingsTable extends Migration
             $table->boolean('require_payment');
             $table->string('code');
             $table->string('hash');
-            $table->enum('status',['new', 'active'])->default('new');
+            $table->string('subscription_id')->nullable();
+            $table->enum('status',['new', 'active', 'canceled'])->default('new');
             $table->timestamps();
         });
     }

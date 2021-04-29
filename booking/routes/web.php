@@ -23,7 +23,7 @@ $router->get('/prevMonth', "MainController@prevMonth");
 $router->post('/startBooking', "MainController@startBooking");
 $router->get('/customFields', "MainController@getCustomFields");
 
-$router->get('/api/ChargebeeCallback', "CallbackController@ChargebeeCallback");
+$router->post('/api/ChargebeeCallback', "CallbackController@ChargebeeCallback");
 
 
 
