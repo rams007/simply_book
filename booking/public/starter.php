@@ -34,6 +34,9 @@ $services = $client->getEventList();
     <link href='html/css/styles.css' rel='stylesheet'/>
     <link href='html/css/webpage.css' rel='stylesheet'/>
 
+    <link href='//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css' rel='stylesheet'/>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
     <script>
 
 
@@ -424,11 +427,13 @@ $services = $client->getEventList();
                     formData: $("#addiTionalFields").serialize()
                     //     countRepeat: $('#countRepeat').val()
                 };
+                $("#loader").show();
                 $.post("startBooking", postData).done(function (data) {
                     console.log(data);
+                    $("#loader").hide();
                     if (data.error === true) {
-                        alert(data.msg);
-
+                      //  alert(data.msg);
+                        toastr.error(data.msg, 'error!')
                     } else {
                         window.location.href = data.hostedPageUrl;
                     }

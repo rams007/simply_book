@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BatchBooking;
 use App\Models\CreatedBookings;
 use DateTime;
 use Illuminate\Http\Request;
@@ -150,11 +151,14 @@ class MainController extends Controller
             )
         ));
 
-
+        $hostedPageUrl = "";
         parse_str($request->formData, $formData);
         //    print_r($formData);
         $additionalFields = $formData;
 
+        if (empty($request->email)) {
+            return response()->json(['error' => true, 'msg' => "Email field is required", 'hostedPageUrl' => ""]);
+        }
         $clientData = array(
             'name' => $request->username,
             'email' => $request->email,
@@ -176,24 +180,32 @@ class MainController extends Controller
             )
         ));
 
+        try {
 
-        $users = $clientAdmin->getClientList($request->email, null);
-        if (!empty($users)) {
-            $clientId = $users[0]->id;
-            $ourClient = $clientAdmin->getClientInfo($clientId);
+            $users = $clientAdmin->getClientList($request->email, null);
+            if (!empty($users)) {
+                $clientId = $users[0]->id;
+                $ourClient = $clientAdmin->getClientInfo($clientId);
 
-            $clientData['client_id'] = $clientId;
-            $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
-            $clientData['client_sign'] = $client_sign;
-        } else {
+                $clientData['client_id'] = $clientId;
+                $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
+                $clientData['client_sign'] = $client_sign;
+            } else {
 
-            $clientId = $clientAdmin->addClient($clientData, false);
-            $ourClient = $clientAdmin->getClientInfo($clientId);
-            $clientData['client_id'] = $clientId;
-            $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
-            $clientData['client_sign'] = $client_sign;
+                $clientId = $clientAdmin->addClient($clientData, false);
+                $ourClient = $clientAdmin->getClientInfo($clientId);
+                $clientData['client_id'] = $clientId;
+                $client_sign = md5($clientId . $ourClient->client_hash . env('API_SECRET'));
+                $clientData['client_sign'] = $client_sign;
+
+            }
+
+        } catch (\Throwable $e) {
+            $errorMsg = $e->getMessage();
+            return response()->json(['error' => true, 'msg' => $errorMsg, 'hostedPageUrl' => $hostedPageUrl]);
 
         }
+
 
         $t = 1;
 
@@ -238,7 +250,7 @@ class MainController extends Controller
             }
 
             //HARDCODED ID of events and links to chargebee
-            $hostedPageUrl = "";
+
             switch ($eventId) {
 
                 case 1:
@@ -265,8 +277,8 @@ class MainController extends Controller
             if (empty($hostedPageUrl)) {
                 $errorMsg = "Unknown eventId";
             } else {
-
-                $hostedPageUrl .= "?subscription[cf_bookid]=" . $bookIdList."&customer[email]=".$request->email;
+                $batchId = BatchBooking::create(['bookIdList' => $bookIdList]);
+                $hostedPageUrl .= "?subscription[cf_bookid]=" . $batchId->id . "&customer[email]=" . $request->email;
             }
 
 
@@ -356,7 +368,7 @@ class MainController extends Controller
 
             */
         } catch (\Throwable $e) {
-            echo $e->getMessage();
+            //       echo $e->getMessage();
             $errorMsg = $e->getMessage();
             if ($e->getMessage() == 'Request error: Selected time start is not available') {
                 //we need another date
