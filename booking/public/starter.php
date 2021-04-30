@@ -36,23 +36,78 @@ $services = $client->getEventList();
 
     <script>
 
-        function selectTime(time) {
+
+        function fillallowedTimes(allowedTimeForDay) {
+            $('#sb_time_slots_container').html('');
+            if (allowedTimeForDay !== undefined) {
+                allowedTimeForDay.forEach(time => {
+                    var timeConverted = new Date('Wed, 09 Aug 1995 ' + time + '');
+                    console.log(timeConverted);
+
+
+                    var hours = timeConverted.getHours();
+                    var minutes = timeConverted.getMinutes();
+                    var ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // the hour '0' should be '12'
+                    minutes = minutes < 10 ? '0' + minutes : minutes;
+                    var strTimeFrom = hours + ':' + minutes + ' ' + ampm;
+
+                    timeConverted.setTime(timeConverted.getTime() + (2 * 60 * 60 * 1000));
+                    hours = timeConverted.getHours();
+                    minutes = timeConverted.getMinutes();
+                    ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // the hour '0' should be '12'
+                    minutes = minutes < 10 ? '0' + minutes : minutes;
+                    var strTimeTo = hours + ':' + minutes + ' ' + ampm;
+
+
+                    var slotHtml = '<div class="slot">' +
+                        '<a class="sb-cell free "  onclick=selectTime("' + time + '","' + selectedDay + '")>' +
+                        strTimeFrom + ' - <span class="end-time">&nbsp; ' + strTimeTo + ' </span>                      </a>                                </div>';
+                    $('#sb_time_slots_container').append(slotHtml);
+                })
+            }
+
+
+        }
+
+
+        function selectTime(time, selectedDay) {
             console.log(time);
             $('#avaliableTimes').val(time);
             $('#sb_datetime_step_container').hide();
             $("#details").show();
 
+            $('#timeMenu').addClass('filled  passed');
+            $('#timeMenu').removeClass('active');
+            $('#timeMenu .title-sub').html(selectedDay)
+            $('#bookingInfoDate').html(selectedDay)
+            $('#bookingInfoTime').html(time)
+            $('#clientMenu').addClass('active');
         }
 
-        function showCalendar(eventId) {
+        function showCalendar(eventId, eventName, eventPrice) {
             console.log(eventId);
+
+            $('#serviceMenu').addClass('filled  passed');
+            $('#serviceMenu').removeClass('active');
+            $('#serviceMenu .title-sub').html(eventName)
+            $('#sb_booking_info .cap ').html(eventName)
+            $('#timeMenu').addClass('active');
+
+            $('#totalPrice').html("Total :$" + eventPrice);
+
             $("#eventId").val(eventId);
             $("#loader").show();
-            $("#sb_menu").hide();
-            $("#steps-nav").show();
+
             $.get("initCalendar?eventId=" + eventId, function (data) {
                 console.log(data);
                 $("#loader").hide();
+                $("#sb_menu").hide();
+                $("#steps-nav").show();
+                $("#sb_back_button a").removeClass('hidden');
                 data.avaliableDates.forEach(curDate => {
 
                     if (allowedDates.indexOf(curDate) === -1) {
@@ -66,6 +121,49 @@ $services = $client->getEventList();
                 $("#eventLists").hide();
                 $("#sb_datetime_step_container").show();
                 LoadCalendar();
+
+
+                var allowed = false;
+                var timeNow = new Date();
+                timeNow.setHours(0);
+                timeNow.setMinutes(0);
+                timeNow.setSeconds(0);
+                timeNow.setMilliseconds(0);
+
+                allowedDates.forEach(dateInList => {
+                    var convertedDate = new Date(dateInList);
+                    var convertedTime = convertedDate.getTime() + convertedDate.getTimezoneOffset() * 60 * 1000
+
+                    //         var k = t.getTime();
+                    if (convertedTime == timeNow.getTime()) {
+                        console.log('can click');
+                        allowed = true;
+                    }
+                });
+
+                if (allowed) {
+
+                    // $('#myModal').modal();
+
+                    var month = '' + (timeNow.getMonth() + 1),
+                        day = '' + timeNow.getDate(),
+                        year = timeNow.getFullYear();
+
+                    if (month.length < 2)
+                        month = '0' + month;
+                    if (day.length < 2)
+                        day = '0' + day;
+
+                    selectedDay = [year, month, day].join('-');
+
+
+                    var allowedTimeForDay = allowedTime[selectedDay];
+
+                    fillallowedTimes(allowedTimeForDay);
+
+                }
+
+
             });
 
             $.get("customFields?eventId=" + eventId, function (data) {
@@ -78,10 +176,19 @@ $services = $client->getEventList();
                     }
 
                     if (field.type === "text") {
-                        $("#additionalFields").append(' <div class="form-group">\n' +
-                            '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
-                            '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" >\n' +
-                            '                        </div>');
+
+                        if(field.title=='Address Line 1'){
+                            $("#additionalFields").append(' <div class="form-group">\n' +
+                                '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="'+field.title+'"  autocomplete="shipping street-address"  >\n' +
+                                '                        </div>');
+                        }else{
+                            $("#additionalFields").append(' <div class="form-group">\n' +
+                                '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="'+field.title+'"   >\n' +
+                                '                        </div>');
+                        }
+
 
 
                     } else if (field.type === 'select') {
@@ -196,6 +303,7 @@ $services = $client->getEventList();
                 showNonCurrentDates: false,
                 eventDisplay: 'none',
                 selectable: true,
+                longPressDelay: 100,
                 select: function (arg) {
 
 
@@ -214,16 +322,8 @@ $services = $client->getEventList();
                         // $('#myModal').modal();
                         selectedDay = arg.startStr;
                         var allowedTimeForDay = allowedTime[selectedDay];
-                        $('#sb_time_slots_container').html('');
-                        if (allowedTimeForDay !== undefined) {
-                            allowedTimeForDay.forEach(time => {
-                                var slotHtml = '<div class="slot">' +
-                                    '<a class="sb-cell free "  onclick=selectTime("' + time + '")>' +
-                                    time +
-                                    '                      </a>                                </div>';
-                                $('#sb_time_slots_container').append(slotHtml);
-                            })
-                        }
+                        fillallowedTimes(allowedTimeForDay);
+
                     }
                     calendar.unselect()
                 },
@@ -271,6 +371,46 @@ $services = $client->getEventList();
 
         $(document).ready(function () {
 
+            $("#sb_back_button").click(function () {
+                console.log('clicked');
+
+                if ($("#clientMenu").hasClass('active')) {
+                    console.log('client stage');
+                    $('#avaliableTimes').val('');
+                    $('#sb_datetime_step_container').show();
+                    $("#details").hide();
+                    $('#timeMenu').removeClass('filled  passed');
+                    $('#timeMenu').addClass('active');
+                    $('#timeMenu .title-sub').html('')
+                    $('#bookingInfoDate').html('')
+                    $('#bookingInfoTime').html('')
+                    $('#clientMenu').removeClass('active');
+                } else {
+
+                    if ($("#timeMenu").hasClass('active')) {
+                        console.log('time stage');
+
+                        $('#serviceMenu').removeClass('filled  passed');
+                        $('#serviceMenu').addClass('active');
+                        $('#serviceMenu .title-sub').html('')
+                        $('#sb_booking_info .cap ').html('')
+                        $('#timeMenu').removeClass('active');
+                        $("#sb_back_button a").addClass('hidden');
+                        $('#totalPrice').html('');
+
+                        $("#eventId").val('');
+                        $("#sb_menu").show();
+                        $("#steps-nav").hide();
+                        $("#eventLists").show();
+                        $("#sb_datetime_step_container").hide();
+
+                    }
+
+                }
+
+
+            });
+
 
             $('#StartBooking').click(function () {
 
@@ -304,179 +444,6 @@ $services = $client->getEventList();
     </script>
 
 
-    <script>
-
-        /*
-                var allowedDates = ["2021-04-23", "2021-04-25"];
-                var calendar = null;
-                var allowedTime = {};
-                var selectedDay = null;
-
-                function LoadCalendar() {
-
-                    if (calendar != null) {
-                        document.getElementById("calendar").innerHTML = "";
-                    }
-
-                    var calendarEl = document.getElementById('calendar');
-                    calendar = new FullCalendar.Calendar(calendarEl, {
-                        plugins: ['interaction', 'dayGrid'],
-                        header: {
-                            left: 'today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek'
-                        },
-                        selectable: true,
-                        selectMirror: true,
-                        datesSet: function (arg) {
-                            console.log(arg);
-                        },
-                        select: function (arg) {
-                            var allowed = false;
-                            allowedDates.forEach(dateInList => {
-                                var convertedDate = new Date(dateInList);
-                                var convertedTime = convertedDate.getTime() + convertedDate.getTimezoneOffset() * 60 * 1000
-                                if (convertedTime == arg.start.getTime()) {
-                                    console.log('can click');
-                                    allowed = true;
-                                }
-                            });
-
-                            if (allowed) {
-
-                                $('#myModal').modal();
-                                selectedDay = arg.startStr;
-                                var allowedTimeForDay = allowedTime[selectedDay];
-                                $('#avaliableTimes').html('');
-                                if (allowedTimeForDay !== undefined) {
-                                    allowedTimeForDay.forEach(time => {
-
-                                        $('#avaliableTimes')
-                                            .append($("<option></option>")
-                                                .attr("value", time)
-                                                .text(time));
-
-
-                                    })
-
-
-                                }
-                            }
-                            calendar.unselect()
-                        },
-                        dayRender: function (date) {
-                            var founded = false;
-                            allowedDates.forEach(dateInList => {
-                                var convertedDate = new Date(dateInList);
-                                var convertedTime = convertedDate.getTime() + convertedDate.getTimezoneOffset() * 60 * 1000
-                                if (convertedTime == date.date.getTime()) {
-                                    console.log('can click');
-                                    founded = true;
-                                }
-                            });
-                            console.log(date);
-                            if (founded) {
-                                date.el.style.cssText = "background-color:#d5d5d5";
-                                date.el.classList.add("day-on");
-                            } else {
-                               date.el.style.cssText = "opacity: .4;color: #81889a;";
-                                date.el.classList.add("day-off");
-                            }
-                        }
-                    });
-                    calendar.render();
-                }
-
-
-                function FirstCalendar() {
-                    LoadCalendar();
-                }
-
-                document.addEventListener('DOMContentLoaded', FirstCalendar);
-
-
-                $(document).ready(function () {
-
-                    $.get("handler.php?action=init", function (data) {
-                        console.log(data);
-                        data.avaliableDates.forEach(curDate => {
-
-                            if (allowedDates.indexOf(curDate) === -1) {
-                                allowedDates.push(curDate);
-
-                            }
-
-                        });
-
-                        // data.avaliableTimes.forEach(curElement=>{
-        //console.log(curElement);
-                        //   allowedTime[]
-                        allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                        console.log(allowedTime);
-
-                        //    });
-
-                        //    allowedDates = data.avaliableDates;
-                        LoadCalendar();
-                    });
-
-                    $("#next").click(function () {
-
-                        console.log(calendar.getDate());
-
-                        var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
-                        $.get("handler.php?action=next&date=" + calendarTime, function (data) {
-                            console.log(data);
-                            console.log(data);
-                            data.avaliableDates.forEach(curDate => {
-
-                                if (allowedDates.indexOf(curDate) === -1) {
-                                    allowedDates.push(curDate);
-                                }
-
-                            });
-                            allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                            console.log(allowedTime);
-                            calendar.next();
-                        });
-                    })
-
-                    $("#prev").click(function () {
-
-                        console.log(calendar.getDate());
-                        $.get("handler.php?action=prev&date=" + calendar.getDate().getTime(), function (data) {
-                            console.log(data);
-                            console.log(data);
-                            data.avaliableDates.forEach(curDate => {
-                                if (allowedDates.indexOf(curDate) === -1) {
-                                    allowedDates.push(curDate);
-                                }
-                            });
-                            allowedTime = Object.assign(allowedTime, data.avaliableTimes);
-                            console.log(allowedTime);
-                            calendar.prev();
-                        });
-                    })
-
-
-                    $('#StartBooking').click(function () {
-
-                        var postData = {
-                            selectedDay: selectedDay,
-                            selectedTime: $('#avaliableTimes').val(),
-                            countRepeat: $('#countRepeat').val()
-                        };
-                        $.post("handler.php?action=startBooking", postData).done(function (data) {
-                            console.log(data);
-                        });
-
-
-                    })
-
-                });
-
-        */
-    </script>
 </head>
 <body>
 
@@ -571,7 +538,7 @@ $services = $client->getEventList();
                                                 <ul class="clearfix">
 
 
-                                                    <li class="step_info_item  active ">
+                                                    <li class="step_info_item  active " id="serviceMenu">
                                                         <a href="#book/count/1/">
                                                             <div class="content">
                                                                 <div class="title-small">
@@ -584,7 +551,7 @@ $services = $client->getEventList();
                                                     </li>
 
 
-                                                    <li class="step_info_item   ">
+                                                    <li class="step_info_item   " id="timeMenu">
                                                         <a href="#book/count/1/">
                                                             <div class="content">
                                                                 <div class="title-small">
@@ -597,7 +564,7 @@ $services = $client->getEventList();
                                                     </li>
 
 
-                                                    <li class="step_info_item  ">
+                                                    <li class="step_info_item  " id="clientMenu">
                                                         <a href="#book/count/1/">
                                                             <div class="content">
                                                                 <div class="title-small">
@@ -626,7 +593,7 @@ $services = $client->getEventList();
                                             <div id="sb_booking_company_time">
                                                 <div class="col-xs-12" translate="no">
                                                     <div class="time">
-                                                        <div><b>Our time</b>: 2:13 AM America/Los Angeles</div>
+                                                        <div><b>Our time</b>: <?php echo date('h:i A '); ?></div>
                                                     </div>
 
                                                 </div>
@@ -717,7 +684,7 @@ $services = $client->getEventList();
                                                                             <div
                                                                                 class="btn-round-mask">
                                                                                 <a class="btn select custom"
-                                                                                   onClick="showCalendar(<?php echo $service->id; ?>)">Select
+                                                                                   onClick="showCalendar(<?php echo $service->id; ?>, '<?php echo $service->name; ?>', '<?php echo $service->price_with_tax; ?>' )">Select
                                                                                 </a>
                                                                             </div>
                                                                         </div>
@@ -885,7 +852,7 @@ $services = $client->getEventList();
                                                 <!-- end calendar -->
 
                                                 <div>
-                                                    <div  id="details" style="display: none">
+                                                    <div id="details" style="display: none">
 
                                                         <div class="column">
                                                             <div class="left-side section">
@@ -992,7 +959,8 @@ $services = $client->getEventList();
                                                                                                                 <td class="label">
                                                                                                                     Date:
                                                                                                                 </td>
-                                                                                                                <td class="info">
+                                                                                                                <td class="info"
+                                                                                                                    id="bookingInfoDate">
                                                                                                                     04.29.2021
                                                                                                                 </td>
                                                                                                             </tr>
@@ -1003,7 +971,8 @@ $services = $client->getEventList();
                                                                                                                     Starts
                                                                                                                     at:
                                                                                                                 </td>
-                                                                                                                <td class="info">
+                                                                                                                <td class="info"
+                                                                                                                    id="bookingInfoTime">
                                                                                                                     11:00
                                                                                                                     AM
                                                                                                                 </td>
@@ -1039,6 +1008,7 @@ $services = $client->getEventList();
                                                                                                         </div>
                                                                                                     </div>
                                                                                                 </div>
+                                                                                                <!--
                                                                                                 <div class="mg">
                                                                                                     <div
                                                                                                         class="accordion">
@@ -1074,6 +1044,7 @@ $services = $client->getEventList();
                                                                                                         </div>
                                                                                                     </div>
                                                                                                 </div>
+                                                                                                -->
                                                                                                 <div
                                                                                                     class="booking-price mg">
                                                                                                     <div class="row">
@@ -1084,7 +1055,8 @@ $services = $client->getEventList();
 
 
                                                                                                                 <div
-                                                                                                                    class="full-price">
+                                                                                                                    class="full-price"
+                                                                                                                    id="totalPrice">
                                                                                                                     Total
                                                                                                                     :
                                                                                                                     $170.00
@@ -1120,22 +1092,19 @@ $services = $client->getEventList();
                                                                                                  tabindex="0">
 
 
-                                     <button
-                                         style="
+                                                                                                <button
+                                                                                                    style="
     background-color: transparent;
     border: none;
 "
-                                         id="StartBooking"
-                                         type="button">
+                                                                                                    id="StartBooking"
+                                                                                                    type="button">
 
                                          <span>
                                                                                                     Confirm booking
 
                                            </span>
                                                                                                 </button>
-
-
-
 
 
                                                                                             </div>

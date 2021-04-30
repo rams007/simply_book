@@ -2637,3 +2637,13 @@ html[dir="rtl"] #sb-timeline #steps #steps-content #sb_booking_content .datetime
     color: #9c00f7;
 }
 
+.day-on {
+    cursor: pointer;
+}
+.day-off {
+    cursor: no-drop;
+}
+.fc-day-sun a.fc-col-header-cell-cushion , .fc-day-sat a.fc-col-header-cell-cushion{
+    color: hsl(310, 93%, 88%) !important;
+
+}

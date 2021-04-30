@@ -6751,7 +6751,7 @@ var FullCalendar = (function (exports) {
         var endMarker = framingRange.end;
         var instanceStarts = [];
         while (dayMarker < endMarker) {
-            var instanceStart 
+            var instanceStart
             // if everyday, or this particular day-of-week
             = void 0;
             // if everyday, or this particular day-of-week
@@ -9243,7 +9243,7 @@ var FullCalendar = (function (exports) {
                     // https://stackoverflow.com/a/45760014
                     var targetEl = ev.target;
                     if (!_this.shouldIgnoreMove) {
-                        targetEl.addEventListener('touchmove', _this.handleTouchMove);
+                        targetEl.addEventListener('touchmove', _this.handleTouchMove, {passive: true});
                     }
                     targetEl.addEventListener('touchend', _this.handleTouchEnd);
                     targetEl.addEventListener('touchcancel', _this.handleTouchEnd); // treat it as a touch end
@@ -9261,7 +9261,7 @@ var FullCalendar = (function (exports) {
             this.handleTouchEnd = function (ev) {
                 if (_this.isDragging) { // done to guard against touchend followed by touchcancel
                     var targetEl = ev.target;
-                    targetEl.removeEventListener('touchmove', _this.handleTouchMove);
+                    targetEl.removeEventListener('touchmove', _this.handleTouchMove, {passive: true});
                     targetEl.removeEventListener('touchend', _this.handleTouchEnd);
                     targetEl.removeEventListener('touchcancel', _this.handleTouchEnd);
                     window.removeEventListener('scroll', _this.handleTouchScroll, true); // useCaptured=true
@@ -9433,13 +9433,13 @@ var FullCalendar = (function (exports) {
     function listenerCreated() {
         listenerCnt += 1;
         if (listenerCnt === 1) {
-            window.addEventListener('touchmove', onWindowTouchMove, { passive: false });
+            window.addEventListener('touchmove', onWindowTouchMove, { passive: true });
         }
     }
     function listenerDestroyed() {
         listenerCnt -= 1;
         if (!listenerCnt) {
-            window.removeEventListener('touchmove', onWindowTouchMove, { passive: false });
+            window.removeEventListener('touchmove', onWindowTouchMove, { passive: true });
         }
     }
     function onWindowTouchMove(ev) {
@@ -11930,7 +11930,7 @@ var FullCalendar = (function (exports) {
                     /*
                     known bug: events that are force to be list-item but span multiple days still take up space in later columns
                     */
-                    nodes.push(createElement("div", { className: 'fc-daygrid-event-harness' + (isAbsolute ? ' fc-daygrid-event-harness-abs' : ''), key: instanceId, 
+                    nodes.push(createElement("div", { className: 'fc-daygrid-event-harness' + (isAbsolute ? ' fc-daygrid-event-harness-abs' : ''), key: instanceId,
                         // in print mode when in mult cols, could collide
                         ref: isMirror ? null : this.segHarnessRefs.createRef(instanceId + ':' + seg.firstCol), style: {
                             visibility: isInvisible ? 'hidden' : '',
@@ -13237,7 +13237,7 @@ var FullCalendar = (function (exports) {
             if (!slatCoords) {
                 return null;
             }
-            return segs.map(function (seg, i) { return (createElement(NowIndicatorRoot, { isAxis: false, date: date, 
+            return segs.map(function (seg, i) { return (createElement(NowIndicatorRoot, { isAxis: false, date: date,
                 // key doesn't matter. will only ever be one
                 key: i }, function (rootElRef, classNames, innerElRef, innerContent) { return (createElement("div", { ref: rootElRef, className: ['fc-timegrid-now-indicator-line'].concat(classNames).join(' '), style: { top: slatCoords.computeDateTop(seg.start, date) } }, innerContent)); })); });
         };
