@@ -40,6 +40,35 @@ $services = $client->getEventList();
     <script>
 
 
+        function changePage (pageName){
+
+            switch(pageName){
+                case 'Reviews':
+                    $("#sb-timeline").hide();
+                    $("#myBookings").hide();
+                    $("#contactUs").hide();
+                    $("#reviews-view").show();
+                    break;
+
+                case 'Contact Us':
+                    $("#sb-timeline").hide();
+                    $("#reviews-view").hide();
+                    $("#myBookings").hide();
+                    $("#contactUs").show();
+                    break;
+
+                case 'My Bookings':
+                    $("#sb-timeline").hide();
+                    $("#contactUs").hide();
+                    $("#reviews-view").hide();
+                    $("#myBookings").show();
+                    break;
+
+            }
+
+
+        }
+
         function fillallowedTimes(allowedTimeForDay) {
             $('#sb_time_slots_container').html('');
             if (allowedTimeForDay !== undefined) {
@@ -105,6 +134,7 @@ $services = $client->getEventList();
             $("#eventId").val(eventId);
             $("#loader").show();
 
+
             $.get("initCalendar?eventId=" + eventId, function (data) {
                 console.log(data);
                 $("#loader").hide();
@@ -123,6 +153,7 @@ $services = $client->getEventList();
                 console.log(allowedTime);
                 $("#eventLists").hide();
                 $("#sb_datetime_step_container").show();
+                $(".nav-trigger.on").show();
                 LoadCalendar();
 
 
@@ -180,18 +211,17 @@ $services = $client->getEventList();
 
                     if (field.type === "text") {
 
-                        if(field.title=='Address Line 1'){
+                        if (field.title == 'Address Line 1') {
                             $("#additionalFields").append(' <div class="form-group">\n' +
                                 '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
-                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="'+field.title+'"  autocomplete="shipping street-address"  >\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="shipping street-address"  >\n' +
                                 '                        </div>');
-                        }else{
+                        } else {
                             $("#additionalFields").append(' <div class="form-group">\n' +
                                 '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
-                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="'+field.title+'"   >\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"   >\n' +
                                 '                        </div>');
                         }
-
 
 
                     } else if (field.type === 'select') {
@@ -374,6 +404,81 @@ $services = $client->getEventList();
 
         $(document).ready(function () {
 
+            $('body').click(function (event) {
+                if ($('body').hasClass('hasModal')) {
+                    $(".full-info").toggleClass('active');
+                    if ($(".full-info").hasClass('active')) {
+                        $('body').addClass('hasModal');
+                    } else {
+                        $('body').removeClass('hasModal')
+                    }
+                }
+            });
+
+
+            $("#sb_sign_in_btn").click(function () {
+                console.log($("sb_sign_in_email").val());
+                if ($("#sb_sign_in_email").val() === "") {
+                    toastr.warning("Please enter email");
+                    return false;
+                }
+                if ($("#sb_sign_in_password").val() === "") {
+                    toastr.warning("Please enter password");
+                    return false;
+                }
+                $("#loader").show();
+                var postData = {email: $("#sb_sign_in_email").val(), password: $("#sb_sign_in_password").val()};
+                $.post("login", postData).done(function (data) {
+                    console.log(data);
+                    $("#loader").hide();
+                    if (data.error === true) {
+                        //  alert(data.msg);
+                        toastr.error(data.msg, 'error!')
+                    } else {
+                        // window.location.href = data.hostedPageUrl;
+                        $(".not-logged").hide();
+                        $(".is-logged").show();
+                        $("#loginName").html(data.userData.name)
+                        $("#sb_client_info img").attr('src', data.userData.openid_img);
+                        $("#loginedUserId").val(data.userData.id);
+                        $("#loginedUserHash").val(data.userData.client_hash);
+                    }
+
+                });
+
+
+            });
+
+            $('.full-info').click(function (event) {
+                console.log('clicked');
+                event.stopPropagation();
+            });
+
+
+            $("#sb_client_info").click(function (event) {
+                console.log('click');
+                $(".full-info").toggleClass('active');
+                if ($(".full-info").hasClass('active')) {
+                    $('body').addClass('hasModal');
+                } else {
+                    $('body').removeClass('hasModal')
+                }
+                event.stopPropagation();
+            });
+
+            $(".nav-trigger.on").click(function () {
+
+                $(this).toggleClass('opened');
+
+                if ($(this).hasClass('opened')) {
+                    $('#sb_menu').show();
+                    $('#steps-nav').hide();
+                } else {
+                    $('#sb_menu').hide();
+                    $('#steps-nav').show();
+                }
+            })
+
             $("#sb_back_button").click(function () {
                 console.log('clicked');
 
@@ -406,6 +511,7 @@ $services = $client->getEventList();
                         $("#steps-nav").hide();
                         $("#eventLists").show();
                         $("#sb_datetime_step_container").hide();
+                        $(".nav-trigger.on").hide();
 
                     }
 
@@ -432,7 +538,7 @@ $services = $client->getEventList();
                     console.log(data);
                     $("#loader").hide();
                     if (data.error === true) {
-                      //  alert(data.msg);
+                        //  alert(data.msg);
                         toastr.error(data.msg, 'error!')
                     } else {
                         window.location.href = data.hostedPageUrl;
@@ -467,18 +573,68 @@ $services = $client->getEventList();
                                         </div>
                                     </div>
                                 </div>
-                                <div id="sb_client_info" class="nav-item" style="display: none;">
+                                <div id="sb_client_info" class="nav-item">
                                     <div class="login-container">
                                         <button class="avatar item-container" id="sb_client_info"><img
-                                                src="https://graph.facebook.com/4138230779533258/picture?width=150&amp;height=150"
+                                                src="/img/user-default-image.png"
                                                 alt="User profile menu item icon"></button>
                                         <div class="full-info">
                                             <div class="tab-pd">
                                                 <div id="sb_login_form">
                                                     <div class="main-form">
-                                                        <div class="is-logged">
+
+                                                        <div class="not-logged">
+                                                            <div class="row">
+                                                                <div class="col-sm-12">
+                                                                    <div id="sb_sign_in_form">
+                                                                        <div class="inputs">
+                                                                            <div class="email ">
+                                                                                <input type="email" class="form-control"
+                                                                                       id="sb_sign_in_email"
+                                                                                       name="email" placeholder="Email">
+                                                                                <p class="help-block"></p>
+                                                                            </div>
+                                                                            <div class="password ">
+                                                                                <input type="password"
+                                                                                       class="form-control"
+                                                                                       id="sb_sign_in_password"
+                                                                                       name="password"
+                                                                                       placeholder="Password"
+                                                                                       style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAAAXNSR0IArs4c6QAAAXtJREFUOBGVUj2LwkAUnIjBICIIKe8gWKRKo2BvYXMgWNlYWZ3gn1B/htekibWVcH1aIVV+wQULCxsRtMrtrGYv8RLUB8nuvjczu+9DWywWH3EcL8X3jidM07QfAfucz+ffhJdeIZNwu+iLexoFnrr5Cr/+05xSOvBoX61WYdt2BvaSgGVZ6PV6+QKGYahApVKBKJY6p2PKeduUufb7fbTbbaxWKxwOB0ynU+x2O7ium4ndk3l+KYU8AW02m8UM8Jnn81limMLlcsnDK59IMRKHiXpBQibiEZkY0co3sSxlDegoMsdx0O12Ua/XEUUR1us1jsejhFNEvaBIgK07nU4IwxDNZhOdTicDLXO205OViYrDZrORLg5Qq9VSdUpwJSEwoUjiuF+FOEzTxGAwwH6/x3a7zUD+piXjBpLukDwej2XenufJdNLQhzUYjUao1WpoNBpywIbDYZqPwi6wz6xyEATQdV2ROKmJEVMoIECszdL3ffb7n5EsnJNf8S6HAZZBgLIAAAAASUVORK5CYII=&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%;"
+                                                                                       autocomplete="off">
+                                                                                <span class="password-toggler"
+                                                                                      tabindex="0"><i
+                                                                                        class="fa fa-eye"></i></span>
+                                                                                <p class="help-block"></p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="bar">
+                                                                            <div class="txt">
+                                                                                <span
+                                                                                    class="remind-pass sb-client-remind-popup">Remind password</span>
+                                                                                <div class="btn-bar--row">
+                                                                                    <button type="button"
+                                                                                            class="btn btn--sign-in custom popup-hide"
+                                                                                            id="sb_sign_in_btn">Sign in
+                                                                                    </button>
+                                                                                    <a type="button"
+                                                                                       href="#client/sign-in"
+                                                                                       class="btn btn--sign-up custom popup-hide"
+                                                                                       id="sign_up_btn">Sign up</a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="is-logged" style="display: none">
                                                             <div class="cap">
-                                                                You are logged in as: <b>Рома Говтвян</b>
+                                                                You are logged in as: <b id="loginName">Рома Говтвян</b>
+                                                                <input type="hidden" id="loginedUserId">
+                                                                <input type="hidden" id="loginedUserHash">
+
                                                             </div>
                                                             <div class="bar-with-btn">
                                                                 <button
@@ -490,6 +646,7 @@ $services = $client->getEventList();
                                                                 </button>
                                                             </div>
                                                         </div>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -507,16 +664,16 @@ $services = $client->getEventList();
                                 <div>
                                     <ul class="nav clearfix" id="sb_menu_list_items_container">
                                         <li class="menu-item clearfix  active">
-                                            <a class="popup-hide" href="#">Home</a>
+                                            <a class="popup-hide" href="/">Home</a>
                                         </li>
                                         <li class="menu-item clearfix ">
-                                            <a class="popup-hide" href="#reviews">Reviews</a>
+                                            <a class="popup-hide" href="#" onclick="changePage('Reviews')">Reviews</a>
                                         </li>
                                         <li class="menu-item clearfix ">
-                                            <a class="popup-hide" href="#contact-widget">Contact Us</a>
+                                            <a class="popup-hide" href="#"  onclick="changePage('Contact Us')">Contact Us</a>
                                         </li>
                                         <li class="menu-item clearfix ">
-                                            <a class="popup-hide" href="#client/bookings/type/upcoming">My Bookings</a>
+                                            <a class="popup-hide" href="#" onclick="changePage('My Bookings')">My Bookings</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -532,8 +689,8 @@ $services = $client->getEventList();
             <div>
                 <section id="main-content">
                     <div id="sb_content">
-                        <div id="sb-timeline">
 
+                        <div id="sb-timeline">
                             <nav id="steps-nav" style="display: none">
                                 <div id="menu-active-bg"></div>
                                 <div class="container-fluid column">
@@ -1132,6 +1289,263 @@ $services = $client->getEventList();
                                 </div>
                             </div>
                         </div>
+
+                        <section id="reviews-view" style="display: none">
+                            <div class="page-pd">
+                                <div class="container-fluid column">
+                                    <div class="row">
+                                        <div class="reviews-toggle">
+                                            <a class="reviews-toggle__link active" data-block="reviews">Reviews</a>
+                                            <a class="reviews-toggle__link" data-block="leave_review">Leave a review</a>
+                                        </div>
+                                        <div class="col-sm-12 reviews-view-tab" id="leave_review">
+                                            <div class="row">
+                                                <div id="sb_reviews_add_container">
+                                                    <div>
+                                                        <div class="title-main">Leave a review</div>
+                                                        <div class="add-review">
+                                                            <div class="avatar">
+                                                                <div class="photo">
+                                                                    <img
+                                                                        src="/v2/themes/assets/img/user-default-image.png"
+                                                                        align="" alt="User empty image">
+                                                                </div>
+                                                                <div class="info">
+                                                                </div>
+                                                                <div class="btn-bar">
+                                                                </div>
+                                                            </div>
+                                                            <div class="form">
+
+                                                                <div class="form-group">
+                                                                    <div class="form-row required">
+                                                                        <input id="feedback__subject" value=""
+                                                                               name="subject" placeholder="Review Title"
+                                                                               type="text">
+                                                                        <p class="help-block"></p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <div class="form-row required">
+                                                                        <textarea id="feedback__message" name="message"
+                                                                                  placeholder="Message"></textarea>
+                                                                        <p class="help-block"></p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="stars-container">
+                                                                    <div class="rating-container">
+                                                                        <form>
+                                                                            <input type="radio" name="rate"
+                                                                                   id="group-1-0" value="5"
+                                                                                   checked="checked">
+                                                                            <label for="group-1-0"></label>
+
+                                                                            <input type="radio" name="rate"
+                                                                                   id="group-1-1" value="4">
+                                                                            <label for="group-1-1"></label>
+
+                                                                            <input type="radio" name="rate"
+                                                                                   id="group-1-2" value="3">
+                                                                            <label for="group-1-2"></label>
+
+                                                                            <input type="radio" name="rate"
+                                                                                   id="group-1-3" value="2">
+                                                                            <label for="group-1-3"></label>
+
+                                                                            <input type="radio" name="rate"
+                                                                                   id="group-1-4" value="1">
+                                                                            <label for="group-1-4"></label>
+                                                                        </form>
+                                                                    </div>
+                                                                    <p class="help-block"></p>
+                                                                </div>
+
+                                                                <div class="social-container">
+                                                                    <div class="cap">Please log in to leave a review
+                                                                    </div>
+                                                                    <div class="line-arrow line-arrow-top"></div>
+                                                                    <div class="buttons brand">
+                                                                        <a href="/v2/review/login/provider/facebook"
+                                                                           target="_blank" class="fb">
+
+                                                                        </a>
+                                                                        <a href="/v2/review/login/provider/google"
+                                                                           target="_blank" class="gl">
+
+                                                                        </a>
+                                                                        <a href="/v2/review/login/provider/twitter"
+                                                                           target="_blank" class="tw">
+
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-12 reviews-view-tab active" id="reviews">
+                                            <div class="row">
+                                                <div id="sb_reviews_list_container">
+                                                    <div>
+                                                        <div class="title-main">Reviews</div>
+
+                                                        <div id="sb_reviews_list_items_container">
+
+                                                        </div>
+
+                                                        <div id="sb_reviews_page_pagination">
+
+                                                        </div>
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="section-divider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="contactUs" style="display: none">
+                            <div class="page-pd">
+                                <div class="sb-widget-form">
+                                    <form>
+                                        <div class="title">
+                                            You can book an appointment or leave us a message and we will contact you
+                                            back
+                                        </div>
+                                        <ul class="form-fields form-horizontal custom-form">
+                                            <li>
+                                                <div class="form-group">
+                                                    <label for="name" class="col-sm-12 control-label">
+                                                        Your name
+                                                    </label>
+                                                    <div class="col-sm-12">
+                                                        <input type="text" class="form-control" value=""
+                                                               id="contact_widget__name" name="contact_widget__name"
+                                                               placeholder="Your name"
+                                                               style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAAAXNSR0IArs4c6QAAAXtJREFUOBGVUj2LwkAUnIjBICIIKe8gWKRKo2BvYXMgWNlYWZ3gn1B/htekibWVcH1aIVV+wQULCxsRtMrtrGYv8RLUB8nuvjczu+9DWywWH3EcL8X3jidM07QfAfucz+ffhJdeIZNwu+iLexoFnrr5Cr/+05xSOvBoX61WYdt2BvaSgGVZ6PV6+QKGYahApVKBKJY6p2PKeduUufb7fbTbbaxWKxwOB0ynU+x2O7ium4ndk3l+KYU8AW02m8UM8Jnn81limMLlcsnDK59IMRKHiXpBQibiEZkY0co3sSxlDegoMsdx0O12Ua/XEUUR1us1jsejhFNEvaBIgK07nU4IwxDNZhOdTicDLXO205OViYrDZrORLg5Qq9VSdUpwJSEwoUjiuF+FOEzTxGAwwH6/x3a7zUD+piXjBpLukDwej2XenufJdNLQhzUYjUao1WpoNBpywIbDYZqPwi6wz6xyEATQdV2ROKmJEVMoIECszdL3ffb7n5EsnJNf8S6HAZZBgLIAAAAASUVORK5CYII=&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%;"
+                                                               autocomplete="off">
+                                                        <p class="help-block"></p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li>
+                                                <div class="form-group">
+                                                    <label for="email" class="col-sm-12 control-label">
+                                                        E-mail
+                                                    </label>
+                                                    <div class="col-sm-12">
+                                                        <input type="text" class="form-control" value=""
+                                                               id="contact_widget__email" name="contact_widget__email"
+                                                               placeholder="E-mail">
+                                                        <p class="help-block"></p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li>
+                                                <div class="form-group ">
+                                                    <label for="phone" class="col-sm-12 control-label">
+                                                        Contact phone
+                                                    </label>
+                                                    <div class="col-sm-12">
+                                                        <input type="text" class="form-control" value=""
+                                                               id="contact_widget__phone" name="contact_widget__phone"
+                                                               placeholder="Contact phone">
+                                                        <p class="help-block"></p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li>
+                                                <div class="form-group ">
+                                                    <label for="message" class="col-sm-12 control-label">
+                                                        Message
+                                                    </label>
+                                                    <div class="col-sm-12">
+                                                        <textarea class="form-control" id="contact_widget__message"
+                                                                  name="contact_widget__message" placeholder="Message"
+                                                                  rows="6"></textarea>
+                                                        <p class="help-block"></p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="buttons">
+                                                    <a class="open-booking-widget-button" href="#book">
+                                                        Make an appointment
+                                                    </a>
+                                                    <input type="submit" class="send-message-button btn blue"
+                                                           value="Send message">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="myBookings" style="display: none">
+                            <div>
+                                <div id="booking-result-view">
+                                    <div id="booking-result-tabs">
+                                        <div class="container-fluid column">
+                                            <div class="tabs-container">
+                                                <div class="tab-link active">
+                                                    <a href="#client/bookings/type/upcoming">upcoming bookings</a>
+                                                </div>
+                                                <div class="tab-link">
+                                                    <a href="#client/bookings/type/all">all bookings</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="container-fluid column">
+                                        <div class="row">
+                                            <div class="section-pd">
+                                                <div id="sb_message_container"></div>
+                                                <div id="sb_push_notification_container"></div>
+                                                <div id="sb_back_to_bookings">
+                                                    <a href="#book" class="back-to-services">
+                                                        <span class="fa fa-angle-left"></span>
+                                                        <span>
+                            Back to services
+                        </span>
+                                                    </a>
+                                                </div>
+                                                <div id="sb_bookings_list">
+                                                    <div>
+                                                        <div class="alert alert-info alert-dismissible" role="alert">
+                                                            There are no appointments yet. Press the "Book Now" button
+                                                            to make an appointment.
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="clearfix"></div>
+
+
+                                            </div>
+                                            <div id="sb_back_btns_plugin"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </section>
+
+
                     </div>
                 </section>
             </div>
