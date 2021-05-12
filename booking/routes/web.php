@@ -25,6 +25,8 @@ $router->get('/customFields', "MainController@getCustomFields");
 
 $router->post('/api/ChargebeeCallback', "CallbackController@ChargebeeCallback");
 
+$router->post('/api/SimplyBookCallback', "CallbackController@SimplyBookCallback");
+
 $router->post('/login', "AuthController@doLogin");
 
 

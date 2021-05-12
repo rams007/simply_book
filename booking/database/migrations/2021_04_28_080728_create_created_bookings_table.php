@@ -29,6 +29,7 @@ class CreateCreatedBookingsTable extends Migration
             $table->string('hash');
             $table->string('subscription_id')->nullable();
             $table->enum('status',['new', 'active', 'canceled'])->default('new');
+            $table->timestamp('confirmed_at')->nullable();
             $table->timestamps();
         });
     }

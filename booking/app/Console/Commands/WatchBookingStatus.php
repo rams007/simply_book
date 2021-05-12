@@ -177,7 +177,7 @@ class WatchBookingStatus extends Command
                     $client_sign = md5($clientId . $clientExtended->client_hash . API_SECRET);
                     $clientData['client_sign'] = $client_sign;
 
-                    $additionalFieldFilledByClient = $clientAdmin->getBookingDetails($bookings[0]->id);
+                    $additionalFieldFilledByClient = $clientAdmin->getBookingDetails($bookings[0]->id)->additional_fields;
                     $bookingFieldsData = [];
                     foreach ($additionalFieldFilledByClient as $field) {
                         $bookingFieldsData[$field->field_name] = $field->value;

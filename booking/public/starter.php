@@ -202,7 +202,7 @@ $services = $client->getEventList();
 
             $.get("customFields?eventId=" + eventId, function (data) {
                 console.log(data);
-
+                $("#additionalFields").html("");
                 data.allAdditionalFields.forEach(field => {
 
                     if (field.value === null) {
@@ -332,7 +332,7 @@ $services = $client->getEventList();
                     center: 'title',
                     end: 'myCustomNextButton' // will normally be on the right. if RTL, will be on the left
                 },
-                initialDate: '2021-04-12',
+                initialDate: '<?php echo date("Y-m-d");?>',
                 showNonCurrentDates: false,
                 eventDisplay: 'none',
                 selectable: true,
@@ -530,7 +530,7 @@ $services = $client->getEventList();
                     username: $('#username').val(),
                     phone: $('#phone').val(),
                     eventId: $("#eventId").val(),
-                    formData: $("#addiTionalFields").serialize()
+                    formData: $("#addiTionalFieldsForm").serialize()
                     //     countRepeat: $('#countRepeat').val()
                 };
                 $("#loader").show();
@@ -749,7 +749,7 @@ $services = $client->getEventList();
 
                             <div id="steps">
 
-                                <div id="time-settings">
+                                <!--    <div id="time-settings">
                                     <div class="container-fluid column">
                                         <div class="row">
                                             <div id="sb_booking_company_time">
@@ -764,7 +764,7 @@ $services = $client->getEventList();
                                         </div>
                                     </div>
                                 </div>
-
+!-->
                                 <div id="sb_booking_header"></div>
 
                                 <div id="steps-content">
@@ -1074,7 +1074,7 @@ $services = $client->getEventList();
                                                                                                            id="eventId">
                                                                                                 </div>
                                                                                                 <form
-                                                                                                    id="addiTionalFields">
+                                                                                                    id="addiTionalFieldsForm">
                                                                                                     <div
                                                                                                         id="additionalFields"></div>
                                                                                                 </form>
@@ -1123,7 +1123,7 @@ $services = $client->getEventList();
                                                                                                                 </td>
                                                                                                                 <td class="info"
                                                                                                                     id="bookingInfoDate">
-                                                                                                                    04.29.2021
+                                                                                                                    <?php echo date("d.m.Y");?>
                                                                                                                 </td>
                                                                                                             </tr>
 
