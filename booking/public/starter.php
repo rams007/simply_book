@@ -282,9 +282,9 @@ $services = $client->getEventList();
                             //  calendar.next();
                             $("#loader").show();
                             console.log(calendar.getDate());
-
+                           var eventId =   $("#eventId").val();
                             var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
-                            $.get("nextMonth?date=" + calendarTime, function (data) {
+                            $.get("nextMonth?date=" + calendarTime+ "&eventId="+eventId, function (data) {
                                 console.log(data);
                                 $("#loader").hide();
                                 data.avaliableDates.forEach(curDate => {
@@ -307,7 +307,7 @@ $services = $client->getEventList();
                         click: function () {
                             $("#loader").show();
                             console.log(calendar.getDate());
-                            $.get("prevMonth?date=" + calendar.getDate().getTime(), function (data) {
+                            $.get("prevMonth?date=" + calendar.getDate().getTime()+ "&eventId="+eventId, function (data) {
                                 console.log(data);
                                 $("#loader").hide();
                                 data.avaliableDates.forEach(curDate => {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\JsonRpcClient;
+use App\Models\AvaliableDates;
 use App\Models\BatchBooking;
 use App\Models\CreatedBookings;
 use Illuminate\Http\Request;
@@ -93,8 +94,13 @@ class CallbackController extends Controller
                 case "create":
                     $sign = md5($request->booking_id . $request->booking_hash . env('API_SECRET'));
                     $bookingDetails = $client->getBookingDetails($request->booking_id, $sign);
+                    $dateParts= explode(" ",$bookingDetails->start_date_time);
+                    $eventId = $bookingDetails->event_id;
+                    AvaliableDates::where('service_id',$eventId)->where('avaliable_date',$dateParts[0])->where('avaliable_time_start',$dateParts[1])->delete();
 
-                    $client = $bookingDetails->client_name;
+                   /*
+                   this can be used for sending emails
+                   $client = $bookingDetails->client_name;
                     $client_email = $bookingDetails->client_email;
                     $service = $bookingDetails->event_name;
                     $start_date_time = strtotime($bookingDetails->start_date_time);
@@ -164,7 +170,7 @@ class CallbackController extends Controller
                         'subject' => 'Test from sdk',
                         'html' => $html
                     ]);
-
+*/
 
                     break;
 

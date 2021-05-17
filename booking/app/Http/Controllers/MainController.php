@@ -2,40 +2,55 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AvaliableDates;
 use App\Models\BatchBooking;
 use App\Models\CreatedBookings;
 use DateTime;
 use Illuminate\Http\Request;
 use App\Helpers\JsonRpcClient;
+use Illuminate\Support\Facades\DB;
 
 class MainController extends Controller
 {
     public function initCalendar(Request $request)
     {
 
-        $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-        $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-        $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-            'headers' => array(
-                'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                'X-Token: ' . $token
-            )
-        ));
-
+        /*   $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+           $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
+           $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
+               'headers' => array(
+                   'X-Company-Login: ' . env('COMPANY_LOGIN'),
+                   'X-Token: ' . $token
+               )
+           ));
+   */
         $eventId = $request->eventId;
-        $firstWorkingDay = $client->getFirstWorkingDay(['unit_group_id' => 1, 'event_id' => $eventId]);
+        $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
 
+        //  $firstWorkingDay = $client->getFirstWorkingDay(['unit_group_id' => 1, 'event_id' => $eventId]);
+        $firstWorkingDay = AvaliableDates::where('service_id', $eventId)->orderBy('avaliable_date')->first(['avaliable_date']);
+        $firstWorkingDay = $firstWorkingDay->avaliable_date;
         $date = new DateTime();
         $date->modify('last day of this month');
         $dateTo = $date->format('Y-m-d');
 
-        $performerId = 1;
-        $qty = 1;
-        $availableTime = $client->getStartTimeMatrix($firstWorkingDay, $dateTo, $eventId, $performerId, $qty);
+        /*    $performerId = 1;
+            $qty = 1;
+            $availableTime = $client->getStartTimeMatrix($firstWorkingDay, $dateTo, $eventId, $performerId, $qty);
+            $allAwaliableDates = [];
+            foreach ($availableTime as $date => $val) {
+                if (!empty($val)) {
+                    $allAwaliableDates[] = $date;
+                }
+            }*/
+
+        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $firstWorkingDay)->where('avaliable_date', '<=', $dateTo)->get();
         $allAwaliableDates = [];
-        foreach ($availableTime as $date => $val) {
-            if (!empty($val)) {
-                $allAwaliableDates[] = $date;
+        $availableTime = [];
+        foreach ($availableTimeList as $val) {
+            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
+                $allAwaliableDates[] = $val->avaliable_date;
+                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
             }
         }
         return response()->json(['avaliableDates' => $allAwaliableDates, 'avaliableTimes' => $availableTime]);
@@ -45,16 +60,17 @@ class MainController extends Controller
     public function nextMonth(Request $request)
     {
 
-        $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-        $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-        $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-            'headers' => array(
-                'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                'X-Token: ' . $token
-            )
-        ));
-
-
+        /* $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+         $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
+         $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
+             'headers' => array(
+                 'X-Company-Login: ' . env('COMPANY_LOGIN'),
+                 'X-Token: ' . $token
+             )
+         ));
+ */
+        $eventId = $request->eventId;
+        $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
         $date = new DateTime();
         $date->setTimestamp($request->date / 1000);
         $date->modify('last day of next month');
@@ -62,20 +78,31 @@ class MainController extends Controller
 
         $date->modify('first day of this month');
         $dateFrom = $date->format('Y-m-d');
+        /*
+                $serviceId = 1;
+                $performerId = 1;
+                $qty = 1;
+                $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
 
-        $serviceId = 1;
-        $performerId = 1;
-        $qty = 1;
-        $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
+                $allAwaliableDates = [];
 
+                foreach ($availableTime as $date => $val) {
+                    if (!empty($val)) {
+                        $allAwaliableDates[] = $date;
+                    }
+
+                }*/
+
+        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $dateFrom)->where('avaliable_date', '<=', $dateTo)->get();
         $allAwaliableDates = [];
-
-        foreach ($availableTime as $date => $val) {
-            if (!empty($val)) {
-                $allAwaliableDates[] = $date;
+        $availableTime = [];
+        foreach ($availableTimeList as $val) {
+            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
+                $allAwaliableDates[] = $val->avaliable_date;
+                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
             }
-
         }
+
         return response()->json(['avaliableDates' => $allAwaliableDates, 'avaliableTimes' => $availableTime]);
     }
 
@@ -83,16 +110,18 @@ class MainController extends Controller
     public function prevMonth(Request $request)
     {
 
-        $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-        $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-        $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-            'headers' => array(
-                'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                'X-Token: ' . $token
-            )
-        ));
+        /*    $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+            $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
+            $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
+                'headers' => array(
+                    'X-Company-Login: ' . env('COMPANY_LOGIN'),
+                    'X-Token: ' . $token
+                )
+            ));
 
-
+    */
+        $eventId = $request->eventId;
+        $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
         $date = new DateTime();
         $date->setTimestamp($request->date / 1000);
         $date->modify('last day of previous month');
@@ -100,20 +129,30 @@ class MainController extends Controller
 
         $date->modify('first day of this month');
         $dateFrom = $date->format('Y-m-d');
+        /*
+                $serviceId = 1;
+                $performerId = 1;
+                $qty = 1;
+                $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
 
-        $serviceId = 1;
-        $performerId = 1;
-        $qty = 1;
-        $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
 
+                $allAwaliableDates = [];
 
+                foreach ($availableTime as $date => $val) {
+                    if (!empty($val)) {
+                        $allAwaliableDates[] = $date;
+                    }
+
+                }
+        */
+        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $dateFrom)->where('avaliable_date', '<=', $dateTo)->get();
         $allAwaliableDates = [];
-
-        foreach ($availableTime as $date => $val) {
-            if (!empty($val)) {
-                $allAwaliableDates[] = $date;
+        $availableTime = [];
+        foreach ($availableTimeList as $val) {
+            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
+                $allAwaliableDates[] = $val->avaliable_date;
+                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
             }
-
         }
 
         return response()->json(['avaliableDates' => $allAwaliableDates, 'avaliableTimes' => $availableTime]);
@@ -387,6 +426,26 @@ class MainController extends Controller
         return response()->json(['error' => $IsError, 'msg' => $errorMsg, 'hostedPageUrl' => $hostedPageUrl]);
 
 
+    }
+
+    private function getListAvaliableTimes($eventId)
+    {
+        $date = new DateTime();
+        $date->modify('+1 day');
+
+        $sql = "SELECT COUNT(*) AS Total, avaliable_time_start
+            FROM avaliable_dates
+            WHERE service_id = ? AND avaliable_date > '2021-05-17'
+            GROUP BY avaliable_time_start
+            HAVING Total >179
+            ORDER BY COUNT(*) DESC";
+        $res = DB::select($sql, [$eventId, $date->format('Y-m-d')]);
+
+        $listAvaliableTimes = [];
+        foreach ($res as $r) {
+            $listAvaliableTimes[$r->avaliable_time_start] = 1;
+        }
+        return $listAvaliableTimes;
     }
 
 }
