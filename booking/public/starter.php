@@ -306,6 +306,7 @@ $services = $client->getEventList();
                         text: '',
                         click: function () {
                             $("#loader").show();
+                            var eventId =   $("#eventId").val();
                             console.log(calendar.getDate());
                             $.get("prevMonth?date=" + calendar.getDate().getTime()+ "&eventId="+eventId, function (data) {
                                 console.log(data);

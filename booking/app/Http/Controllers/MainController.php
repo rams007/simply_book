@@ -15,44 +15,25 @@ class MainController extends Controller
     public function initCalendar(Request $request)
     {
 
-        /*   $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-           $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-           $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-               'headers' => array(
-                   'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                   'X-Token: ' . $token
-               )
-           ));
-   */
-        $eventId = $request->eventId;
+        $eventId = (int)$request->eventId;
         $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
-
-        //  $firstWorkingDay = $client->getFirstWorkingDay(['unit_group_id' => 1, 'event_id' => $eventId]);
-        $firstWorkingDay = AvaliableDates::where('service_id', $eventId)->orderBy('avaliable_date')->first(['avaliable_date']);
-        $firstWorkingDay = $firstWorkingDay->avaliable_date;
-        $date = new DateTime();
-        $date->modify('last day of this month');
-        $dateTo = $date->format('Y-m-d');
-
-        /*    $performerId = 1;
-            $qty = 1;
-            $availableTime = $client->getStartTimeMatrix($firstWorkingDay, $dateTo, $eventId, $performerId, $qty);
-            $allAwaliableDates = [];
-            foreach ($availableTime as $date => $val) {
-                if (!empty($val)) {
-                    $allAwaliableDates[] = $date;
-                }
-            }*/
-
-        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $firstWorkingDay)->where('avaliable_date', '<=', $dateTo)->get();
+        //filter by current month
+        $dateTo = new DateTime();
+        $dateTo->modify('last day of this month');
         $allAwaliableDates = [];
-        $availableTime = [];
-        foreach ($availableTimeList as $val) {
-            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
-                $allAwaliableDates[] = $val->avaliable_date;
-                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
+        $availableTime = $listAvaliableTimes;
+        foreach ($listAvaliableTimes as $date => $val) {
+            $curDate = new DateTime($date);
+            if ($curDate > $dateTo) {
+                unset($availableTime[$date]);
+                continue;
+            }
+
+            if (!empty($val)) {
+                $allAwaliableDates[] = $date;
             }
         }
+
         return response()->json(['avaliableDates' => $allAwaliableDates, 'avaliableTimes' => $availableTime]);
     }
 
@@ -60,98 +41,61 @@ class MainController extends Controller
     public function nextMonth(Request $request)
     {
 
-        /* $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-         $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-         $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-             'headers' => array(
-                 'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                 'X-Token: ' . $token
-             )
-         ));
- */
-        $eventId = $request->eventId;
+        $eventId = (int)$request->eventId;
         $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
-        $date = new DateTime();
-        $date->setTimestamp($request->date / 1000);
-        $date->modify('last day of next month');
-        $dateTo = $date->format('Y-m-d');
+        //filter by current month
+        $dateTo = new DateTime();
+        $dateTo->setTimestamp($request->date / 1000);
+        $dateTo->modify('last day of next month');
 
-        $date->modify('first day of this month');
-        $dateFrom = $date->format('Y-m-d');
-        /*
-                $serviceId = 1;
-                $performerId = 1;
-                $qty = 1;
-                $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
+        $dateFrom = new DateTime();
+        $dateFrom->setTimestamp($request->date / 1000);
+        $dateFrom->modify('first day of next month');
 
-                $allAwaliableDates = [];
-
-                foreach ($availableTime as $date => $val) {
-                    if (!empty($val)) {
-                        $allAwaliableDates[] = $date;
-                    }
-
-                }*/
-
-        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $dateFrom)->where('avaliable_date', '<=', $dateTo)->get();
         $allAwaliableDates = [];
-        $availableTime = [];
-        foreach ($availableTimeList as $val) {
-            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
-                $allAwaliableDates[] = $val->avaliable_date;
-                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
+        $availableTime = $listAvaliableTimes;
+        foreach ($listAvaliableTimes as $date => $val) {
+            $curDate = new DateTime($date);
+            if ($curDate > $dateTo OR $curDate < $dateFrom) {
+                unset($availableTime[$date]);
+                continue;
+            }
+
+            if (!empty($val)) {
+                $allAwaliableDates[] = $date;
             }
         }
 
         return response()->json(['avaliableDates' => $allAwaliableDates, 'avaliableTimes' => $availableTime]);
+
     }
 
 
     public function prevMonth(Request $request)
     {
 
-        /*    $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-            $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-            $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-                'headers' => array(
-                    'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                    'X-Token: ' . $token
-                )
-            ));
-
-    */
-        $eventId = $request->eventId;
+        $eventId = (int)$request->eventId;
         $listAvaliableTimes = $this->getListAvaliableTimes($eventId);
-        $date = new DateTime();
-        $date->setTimestamp($request->date / 1000);
-        $date->modify('last day of previous month');
-        $dateTo = $date->format('Y-m-d');
+        //filter by current month
+        $dateTo = new DateTime();
+        $dateTo->setTimestamp($request->date / 1000);
+        $dateTo->modify('last day of this month');
 
-        $date->modify('first day of this month');
-        $dateFrom = $date->format('Y-m-d');
-        /*
-                $serviceId = 1;
-                $performerId = 1;
-                $qty = 1;
-                $availableTime = $client->getStartTimeMatrix($dateFrom, $dateTo, $serviceId, $performerId, $qty);
+        $dateFrom = new DateTime();
+        $dateFrom->setTimestamp($request->date / 1000);
+        $dateFrom->modify('first day of this month');
 
-
-                $allAwaliableDates = [];
-
-                foreach ($availableTime as $date => $val) {
-                    if (!empty($val)) {
-                        $allAwaliableDates[] = $date;
-                    }
-
-                }
-        */
-        $availableTimeList = AvaliableDates::where('service_id', $eventId)->where('avaliable_date', '>=', $dateFrom)->where('avaliable_date', '<=', $dateTo)->get();
         $allAwaliableDates = [];
-        $availableTime = [];
-        foreach ($availableTimeList as $val) {
-            if (isset($listAvaliableTimes[$val->avaliable_time_start])) {
-                $allAwaliableDates[] = $val->avaliable_date;
-                $availableTime[$val->avaliable_date][] = $val->avaliable_time_start;
+        $availableTime = $listAvaliableTimes;
+        foreach ($listAvaliableTimes as $date => $val) {
+            $curDate = new DateTime($date);
+            if ($curDate > $dateTo OR $curDate < $dateFrom) {
+                unset($availableTime[$date]);
+                continue;
+            }
+
+            if (!empty($val)) {
+                $allAwaliableDates[] = $date;
             }
         }
 
@@ -430,22 +374,163 @@ class MainController extends Controller
 
     private function getListAvaliableTimes($eventId)
     {
-        $date = new DateTime();
-        $date->modify('+1 day');
 
-        $sql = "SELECT COUNT(*) AS Total, avaliable_time_start
-            FROM avaliable_dates
-            WHERE service_id = ? AND avaliable_date > '2021-05-17'
-            GROUP BY avaliable_time_start
-            HAVING Total >179
-            ORDER BY COUNT(*) DESC";
-        $res = DB::select($sql, [$eventId, $date->format('Y-m-d')]);
-
-        $listAvaliableTimes = [];
-        foreach ($res as $r) {
-            $listAvaliableTimes[$r->avaliable_time_start] = 1;
+        $allAvaliableRecords = AvaliableDates::where('service_id', $eventId)->orderBy('avaliable_date')->get(['avaliable_date', 'avaliable_time_start']);
+        $avaliableTotal = [];
+        $maxDate = '';
+        foreach ($allAvaliableRecords as $record) {
+            $avaliableTotal[$record->avaliable_date][] = $record->avaliable_time_start;
+            $maxDate = new DateTime($record->avaliable_date);
         }
-        return $listAvaliableTimes;
+
+        $notAvaliableTimes = [];
+        $avaliableDates = [];
+        foreach ($avaliableTotal as $validatedDate => $times) {
+            foreach ($times as $validatedTime) {
+                $date = new DateTime($validatedDate);
+                switch ($eventId) {
+                    case 1:
+                        //just return one time as is
+                        $avaliableDates[$validatedDate][] = $validatedTime;
+                        break;
+
+                    case 2:
+                        $dateAvaliable = true;
+                        while ($date < $maxDate) {
+
+                            if (!isset($avaliableTotal[$date->format('Y-m-d')])) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+                            $foundedTime = false;
+                            foreach ($avaliableTotal[$date->format('Y-m-d')] as $timeParts) {
+                                if ($timeParts == $validatedTime) {
+                                    $foundedTime = true;
+                                }
+                            }
+
+                            if ($foundedTime == false) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+
+                            $date->modify('+1 day');
+
+                        }
+
+                        if ($dateAvaliable) {
+                            //    $listAvaliableTimes[$validatedTime] = 1;
+                            $avaliableDates[$validatedDate][] = $validatedTime;
+                        }
+                        break;
+
+
+                    case 4:
+                        $dateAvaliable = true;
+                        while ($date < $maxDate) {
+
+                            if (!isset($avaliableTotal[$date->format('Y-m-d')])) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+                            $foundedTime = false;
+                            foreach ($avaliableTotal[$date->format('Y-m-d')] as $timeParts) {
+                                if ($timeParts == $validatedTime) {
+                                    $foundedTime = true;
+                                }
+                            }
+
+                            if ($foundedTime == false) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+
+                            $date->modify('+7 day');
+
+                        }
+
+                        if ($dateAvaliable) {
+                            //    $listAvaliableTimes[$validatedTime] = 1;
+                            $avaliableDates[$validatedDate][] = $validatedTime;
+                        }
+
+                        break;
+                    case 5:
+                        $dateAvaliable = true;
+                        while ($date < $maxDate) {
+
+                            if (!isset($avaliableTotal[$date->format('Y-m-d')])) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+                            $foundedTime = false;
+                            foreach ($avaliableTotal[$date->format('Y-m-d')] as $timeParts) {
+                                if ($timeParts == $validatedTime) {
+                                    $foundedTime = true;
+                                }
+                            }
+
+                            if ($foundedTime == false) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+
+                            $date->modify('+14 day');
+
+                        }
+
+                        if ($dateAvaliable) {
+                            //    $listAvaliableTimes[$validatedTime] = 1;
+                            $avaliableDates[$validatedDate][] = $validatedTime;
+                        }
+                        break;
+                    case 6:
+                        $dateAvaliable = true;
+                        while ($date < $maxDate) {
+
+                            if (!isset($avaliableTotal[$date->format('Y-m-d')])) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+                            $foundedTime = false;
+                            foreach ($avaliableTotal[$date->format('Y-m-d')] as $timeParts) {
+                                if ($timeParts == $validatedTime) {
+                                    $foundedTime = true;
+                                }
+                            }
+
+                            if ($foundedTime == false) {
+                                $dateAvaliable = false;
+                                $notAvaliableTimes[$validatedTime] = 1;
+                                break;
+                            }
+
+                            $date->modify('+1 month');
+                        }
+
+                        if ($dateAvaliable) {
+                            //    $listAvaliableTimes[$validatedTime] = 1;
+                            $avaliableDates[$validatedDate][] = $validatedTime;
+                        }
+                        break;
+                }
+            }
+        }
+        return $avaliableDates;
     }
 
 }
