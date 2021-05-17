@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         'App\Console\Commands\WatchBookingStatus',
         'App\Console\Commands\DeleteUpaidBooking',
+        'App\Console\Commands\updateAvaliableDates',
     ];
 
     /**
@@ -26,7 +27,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('WatchBookingStatus')->daily()->sendOutputTo(storage_path() . '/logs/cron/WatchBookingStatus.log');
-        $schedule->command('DeleteUpaidBooking')->everyMinute()->sendOutputTo(storage_path() . '/logs/cron/DeleteUpaidBooking.log');;
+        $schedule->command('DeleteUpaidBooking')->everyMinute()->sendOutputTo(storage_path() . '/logs/cron/DeleteUpaidBooking.log');
+        $schedule->command('updateAvaliableDates')->everyFifteenMinutes()->sendOutputTo(storage_path() . '/logs/cron/updateAvaliableDates.log');
     }
 
 
