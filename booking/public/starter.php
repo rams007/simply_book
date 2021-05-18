@@ -115,7 +115,9 @@ $services = $client->getEventList();
             $('#timeMenu').addClass('filled  passed');
             $('#timeMenu').removeClass('active');
             $('#timeMenu .title-sub').html(selectedDay)
-            $('#bookingInfoDate').html(selectedDay)
+         var usDate =   selectedDay.split("-");
+
+            $('#bookingInfoDate').html(usDate[1]+'-'+usDate[2]+'-'+usDate[0])
             $('#bookingInfoTime').html(time)
             $('#clientMenu').addClass('active');
         }
@@ -208,18 +210,51 @@ $services = $client->getEventList();
                     if (field.value === null) {
                         field.value = '';
                     }
+                    var labelClass="";
+if(field.is_null!=="1"){
 
+    labelClass=" control-label  required";
+}
                     if (field.type === "text") {
 
                         if (field.title == 'Address Line 1') {
                             $("#additionalFields").append(' <div class="form-group">\n' +
-                                '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
-                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="shipping street-address"  >\n' +
+                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="address-line1"  >\n' +
                                 '                        </div>');
-                        } else {
+                        }else if (field.title == 'Address Line 2'){
                             $("#additionalFields").append(' <div class="form-group">\n' +
-                                '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
-                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"   >\n' +
+                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="address-line2"  >\n' +
+                                '                        </div>');
+
+
+                        } else {
+
+                            var autocomplete = 'autocomplete="on"';
+                            switch(field.title){
+                                case 'City':
+                                    autocomplete = 'autocomplete="shipping locality"';
+                                    break;
+                                case 'State':
+                                    autocomplete = 'autocomplete="shipping region"';
+                                    break;
+
+                                case 'Zip':
+                                    autocomplete = 'autocomplete="postal-code"';
+                                    break;
+                                case 'Zip':
+                                    autocomplete = 'autocomplete="postal-code"';
+                                    break;
+
+
+                            }
+
+
+
+                            $("#additionalFields").append(' <div class="form-group">\n' +
+                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  '+autocomplete+'  >\n' +
                                 '                        </div>');
                         }
 
@@ -227,7 +262,7 @@ $services = $client->getEventList();
                     } else if (field.type === 'select') {
 
                         var htmlSelect = '<div class="form-group">\n' +
-                            '    <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                            '    <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
                             '    <select class="form-control" id="field' + field.id + '"  name="' + field.name + '" >\n';
 
 
@@ -248,7 +283,7 @@ $services = $client->getEventList();
 
                     } else if (field.type === 'textarea') {
                         $("#additionalFields").append(' <div class="form-group">\n' +
-                            '                            <label for="field' + field.id + '">' + field.title + '</label>\n' +
+                            '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
                             '                            <textarea  name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" ></textarea>\n' +
                             '                        </div>');
                     }
@@ -524,11 +559,31 @@ $services = $client->getEventList();
 
             $('#StartBooking').click(function () {
 
+
+                if($('#acceptTOS').prop('checked')===false){
+                    toastr.error("Please accept our Cancellation Policy!", 'error!')
+                    return false;
+                }
+
+                //gloves field
+                if($("#field11").val().trim()==""){
+                    toastr.error("Please answer: Do you request that gloves be worn during your sessions?", 'error!')
+                    return false;
+                }
+
+                if($("#field12").val().trim()==""){
+                    toastr.error("Please answer: Do you request that a mask be worn during your sessions?", 'error!')
+                    return false;
+                }
+
+
                 var postData = {
                     selectedDay: selectedDay,
                     selectedTime: $('#avaliableTimes').val(),
                     email: $('#email').val(),
-                    username: $('#username').val(),
+                  //  username: $('#username').val(),
+                    firstName: $('#firstName').val(),
+                    lastName: $('#lastName').val(),
                     phone: $('#phone').val(),
                     eventId: $("#eventId").val(),
                     formData: $("#addiTionalFieldsForm").serialize()
@@ -1029,14 +1084,39 @@ $services = $client->getEventList();
 
                                                                                         <div id="sb_additional_fields">
 
-                                                                                            <div id="formBlock"
-                                                                                            >
+                                                                                            <div id="formBlock">
                                                                                                 <div>
+
+                    <div       class="form-group">
+                        <label  class=" control-label  required"
+                            for="firstName">First name</label>
+                        <input
+                            type="text"
+                            name="firstName"
+                            class="form-control"
+                            id="firstName"
+                            autocomplete="name given-name"
+                            placeholder="Enter first name">
+                    </div>
+                    <div       class="form-group">
+                        <label  class=" control-label  required"
+                            for="lastName">Last name</label>
+                        <input
+                            type="text"
+                            name="lastName"
+                            class="form-control"
+                            id="lastName"
+                            autocomplete=" family-name"
+                            placeholder="Enter last name">
+                    </div>
+
+
+
 
 
                                                                                                     <div
                                                                                                         class="form-group">
-                                                                                                        <label
+                                                                                                        <label  class=" control-label  required"
                                                                                                             for="email">Email
                                                                                                             address</label>
                                                                                                         <input
@@ -1044,10 +1124,11 @@ $services = $client->getEventList();
                                                                                                             name="email"
                                                                                                             class="form-control"
                                                                                                             id="email"
+                                                                                                            autocomplete="email"
                                                                                                             aria-describedby="emailHelp"
                                                                                                             placeholder="Enter email">
                                                                                                     </div>
-                                                                                                    <div
+                                                                                             <!--       <div
                                                                                                         class="form-group">
                                                                                                         <label
                                                                                                             for="username">User
@@ -1058,10 +1139,10 @@ $services = $client->getEventList();
                                                                                                             class="form-control"
                                                                                                             id="username"
                                                                                                             placeholder="User name">
-                                                                                                    </div>
+                                                                                                    </div> -->
                                                                                                     <div
                                                                                                         class="form-group">
-                                                                                                        <label
+                                                                                                        <label class=" control-label  required"
                                                                                                             for="phone">Phone</label>
                                                                                                         <input
                                                                                                             type="text"
@@ -1071,6 +1152,9 @@ $services = $client->getEventList();
                                                                                                             placeholder="Phone">
                                                                                                     </div>
 
+
+
+
                                                                                                     <input type="hidden"
                                                                                                            id="eventId">
                                                                                                 </div>
@@ -1079,6 +1163,25 @@ $services = $client->getEventList();
                                                                                                     <div
                                                                                                         id="additionalFields"></div>
                                                                                                 </form>
+
+
+                                                                                                <div class="form-group">
+                                                                                                    <label class="control-label required" for="acceptTOS" role="button" >I agree to the following terms:</label>
+                                                                                                    <div class="custom-checkbox">
+                                                                                                        <input type="checkbox" name="acceptTOS" id="acceptTOS" value="1">
+                                                                                                        <div class="custom-label"></div>
+
+                                                                                                    </div>
+                                                                                                    <div><p style="
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 15px;
+"
+                                                                                                        >Cancellation Policy:</p>
+                                                                                                        <p>All cancellations must be processed at least 24 hours in advance in order to receive a full refund. Any cancellations within 24 hours of the appointment will not warrant any full or partial refund.</p></div>
+                                                                                                </div>
+
+
 
                                                                                             </div>
                                                                                         </div>

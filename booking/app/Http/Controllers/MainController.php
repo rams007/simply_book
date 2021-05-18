@@ -143,7 +143,7 @@ class MainController extends Controller
             return response()->json(['error' => true, 'msg' => "Email field is required", 'hostedPageUrl' => ""]);
         }
         $clientData = array(
-            'name' => $request->username,
+            'name' => $request->firstName.' '.$request->lastName,
             'email' => $request->email,
             'phone' => $request->phone
         );
