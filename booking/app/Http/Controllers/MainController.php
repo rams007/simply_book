@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdditionalFields;
 use App\Models\AvaliableDates;
 use App\Models\BatchBooking;
 use App\Models\CreatedBookings;
@@ -106,16 +107,17 @@ class MainController extends Controller
 
     public function getCustomFields(Request $request)
     {
-        $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
+    /*    $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
         $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
         $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
             'headers' => array(
                 'X-Company-Login: ' . env('COMPANY_LOGIN'),
                 'X-Token: ' . $token
             )
-        ));
+        )); */
         $eventId = $request->eventId;
-        $allAdditionalFields = $client->getAdditionalFields($eventId);
+      //  $allAdditionalFields = $client->getAdditionalFields($eventId);
+        $allAdditionalFields =AdditionalFields::where('event_id',$eventId)->get(['field_id AS id','name','title','type','values','default','is_null','pos','value']);
         return response()->json(['allAdditionalFields' => $allAdditionalFields,]);
 
 
