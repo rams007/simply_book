@@ -21,7 +21,7 @@ class CreateAdditionalFieldsTable extends Migration
             $table->string('title');
             $table->string('type');
             $table->string('length')->nullable();
-            $table->string('values')->nullable();
+            $table->text('values')->nullable();
             $table->string('default')->nullable();
             $table->unsignedTinyInteger('is_null')->nullable();
             $table->unsignedTinyInteger('is_visible');

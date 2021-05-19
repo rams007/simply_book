@@ -40,9 +40,9 @@ $services = $client->getEventList();
     <script>
 
 
-        function changePage (pageName){
+        function changePage(pageName) {
 
-            switch(pageName){
+            switch (pageName) {
                 case 'Reviews':
                     $("#sb-timeline").hide();
                     $("#myBookings").hide();
@@ -115,9 +115,9 @@ $services = $client->getEventList();
             $('#timeMenu').addClass('filled  passed');
             $('#timeMenu').removeClass('active');
             $('#timeMenu .title-sub').html(selectedDay)
-         var usDate =   selectedDay.split("-");
+            var usDate = selectedDay.split("-");
 
-            $('#bookingInfoDate').html(usDate[1]+'-'+usDate[2]+'-'+usDate[0])
+            $('#bookingInfoDate').html(usDate[1] + '-' + usDate[2] + '-' + usDate[0])
             $('#bookingInfoTime').html(time)
             $('#clientMenu').addClass('active');
         }
@@ -210,21 +210,21 @@ $services = $client->getEventList();
                     if (field.value === null) {
                         field.value = '';
                     }
-                    var labelClass="";
-if(field.is_null!=="1"){
+                    var labelClass = "";
+                    if (field.is_null !== 1) {
 
-    labelClass=" control-label  required";
-}
+                        labelClass = " control-label  required";
+                    }
                     if (field.type === "text") {
 
                         if (field.title == 'Address Line 1') {
                             $("#additionalFields").append(' <div class="form-group">\n' +
-                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                                '                            <label for="field' + field.id + '" class="' + labelClass + '">' + field.title + '</label>\n' +
                                 '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="address-line1"  >\n' +
                                 '                        </div>');
-                        }else if (field.title == 'Address Line 2'){
+                        } else if (field.title == 'Unit Number') {
                             $("#additionalFields").append(' <div class="form-group">\n' +
-                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                                '                            <label for="field' + field.id + '" class="' + labelClass + '">' + field.title + '</label>\n' +
                                 '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  autocomplete="address-line2"  >\n' +
                                 '                        </div>');
 
@@ -232,9 +232,9 @@ if(field.is_null!=="1"){
                         } else {
 
                             var autocomplete = 'autocomplete="on"';
-                            switch(field.title){
+                            switch (field.title) {
                                 case 'City':
-                                    autocomplete = 'autocomplete="shipping locality"';
+                                    autocomplete = 'autocomplete="locality"';
                                     break;
                                 case 'State':
                                     autocomplete = 'autocomplete="shipping region"';
@@ -251,10 +251,9 @@ if(field.is_null!=="1"){
                             }
 
 
-
                             $("#additionalFields").append(' <div class="form-group">\n' +
-                                '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
-                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  '+autocomplete+'  >\n' +
+                                '                            <label for="field' + field.id + '" class="' + labelClass + '">' + field.title + '</label>\n' +
+                                '                            <input type="text" name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" placeholder="' + field.title + '"  ' + autocomplete + '  >\n' +
                                 '                        </div>');
                         }
 
@@ -262,7 +261,7 @@ if(field.is_null!=="1"){
                     } else if (field.type === 'select') {
 
                         var htmlSelect = '<div class="form-group">\n' +
-                            '    <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                            '    <label for="field' + field.id + '" class="' + labelClass + '">' + field.title + '</label>\n' +
                             '    <select class="form-control" id="field' + field.id + '"  name="' + field.name + '" >\n';
 
 
@@ -283,7 +282,7 @@ if(field.is_null!=="1"){
 
                     } else if (field.type === 'textarea') {
                         $("#additionalFields").append(' <div class="form-group">\n' +
-                            '                            <label for="field' + field.id + '" class="'+labelClass+'">' + field.title + '</label>\n' +
+                            '                            <label for="field' + field.id + '" class="' + labelClass + '">' + field.title + '</label>\n' +
                             '                            <textarea  name="' + field.name + '" value="' + field.value + '" class="form-control" id="field' + field.id + '" ></textarea>\n' +
                             '                        </div>');
                     }
@@ -317,9 +316,9 @@ if(field.is_null!=="1"){
                             //  calendar.next();
                             $("#loader").show();
                             console.log(calendar.getDate());
-                           var eventId =   $("#eventId").val();
+                            var eventId = $("#eventId").val();
                             var calendarTime = calendar.getDate().getTime() - calendar.getDate().getTimezoneOffset() * 60 * 1000;
-                            $.get("nextMonth?date=" + calendarTime+ "&eventId="+eventId, function (data) {
+                            $.get("nextMonth?date=" + calendarTime + "&eventId=" + eventId, function (data) {
                                 console.log(data);
                                 $("#loader").hide();
                                 data.avaliableDates.forEach(curDate => {
@@ -341,9 +340,9 @@ if(field.is_null!=="1"){
                         text: '',
                         click: function () {
                             $("#loader").show();
-                            var eventId =   $("#eventId").val();
+                            var eventId = $("#eventId").val();
                             console.log(calendar.getDate());
-                            $.get("prevMonth?date=" + calendar.getDate().getTime()+ "&eventId="+eventId, function (data) {
+                            $.get("prevMonth?date=" + calendar.getDate().getTime() + "&eventId=" + eventId, function (data) {
                                 console.log(data);
                                 $("#loader").hide();
                                 data.avaliableDates.forEach(curDate => {
@@ -557,22 +556,39 @@ if(field.is_null!=="1"){
             });
 
 
-            $('#StartBooking').click(function () {
+            $('.StartBooking').click(function () {
 
 
-                if($('#acceptTOS').prop('checked')===false){
+                if ($('#acceptTOS').prop('checked') === false) {
                     toastr.error("Please accept our Cancellation Policy!", 'error!')
                     return false;
                 }
 
                 //gloves field
-                if($("#field11").val().trim()==""){
+                if ($("#field11").val().trim() == "") {
                     toastr.error("Please answer: Do you request that gloves be worn during your sessions?", 'error!')
                     return false;
                 }
 
-                if($("#field12").val().trim()==""){
+                if ($("#field12").val().trim() == "") {
                     toastr.error("Please answer: Do you request that a mask be worn during your sessions?", 'error!')
+                    return false;
+                }
+
+                var formValid = true;
+                $("#addiTionalFieldsForm input").each(function (index) {
+                    //  console.log( index + ": " + $( this ).text() );
+                    console.log($(this).parent().find('label').hasClass('required'));
+                    if ($(this).parent().find('label').hasClass('required')) {
+                        if ($(this).val().trim() == "") {
+                            toastr.error($("#field13").parent().find('label').text() + " required", 'error!');
+                            formValid = false;
+                            return false;
+                        }
+                    }
+                });
+
+                if (!formValid) {
                     return false;
                 }
 
@@ -581,7 +597,7 @@ if(field.is_null!=="1"){
                     selectedDay: selectedDay,
                     selectedTime: $('#avaliableTimes').val(),
                     email: $('#email').val(),
-                  //  username: $('#username').val(),
+                    //  username: $('#username').val(),
                     firstName: $('#firstName').val(),
                     lastName: $('#lastName').val(),
                     phone: $('#phone').val(),
@@ -726,10 +742,12 @@ if(field.is_null!=="1"){
                                             <a class="popup-hide" href="#" onclick="changePage('Reviews')">Reviews</a>
                                         </li>
                                         <li class="menu-item clearfix ">
-                                            <a class="popup-hide" href="#"  onclick="changePage('Contact Us')">Contact Us</a>
+                                            <a class="popup-hide" href="#" onclick="changePage('Contact Us')">Contact
+                                                Us</a>
                                         </li>
                                         <li class="menu-item clearfix ">
-                                            <a class="popup-hide" href="#" onclick="changePage('My Bookings')">My Bookings</a>
+                                            <a class="popup-hide" href="#" onclick="changePage('My Bookings')">My
+                                                Bookings</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -1087,36 +1105,40 @@ if(field.is_null!=="1"){
                                                                                             <div id="formBlock">
                                                                                                 <div>
 
-                    <div       class="form-group">
-                        <label  class=" control-label  required"
-                            for="firstName">First name</label>
-                        <input
-                            type="text"
-                            name="firstName"
-                            class="form-control"
-                            id="firstName"
-                            autocomplete="name given-name"
-                            placeholder="Enter first name">
-                    </div>
-                    <div       class="form-group">
-                        <label  class=" control-label  required"
-                            for="lastName">Last name</label>
-                        <input
-                            type="text"
-                            name="lastName"
-                            class="form-control"
-                            id="lastName"
-                            autocomplete=" family-name"
-                            placeholder="Enter last name">
-                    </div>
-
-
-
+                                                                                                    <div
+                                                                                                        class="form-group">
+                                                                                                        <label
+                                                                                                            class=" control-label  required"
+                                                                                                            for="firstName">First
+                                                                                                            name</label>
+                                                                                                        <input
+                                                                                                            type="text"
+                                                                                                            name="firstName"
+                                                                                                            class="form-control"
+                                                                                                            id="firstName"
+                                                                                                            autocomplete="given-name"
+                                                                                                            placeholder="Enter first name">
+                                                                                                    </div>
+                                                                                                    <div
+                                                                                                        class="form-group">
+                                                                                                        <label
+                                                                                                            class=" control-label  required"
+                                                                                                            for="lastName">Last
+                                                                                                            name</label>
+                                                                                                        <input
+                                                                                                            type="text"
+                                                                                                            name="lastName"
+                                                                                                            class="form-control"
+                                                                                                            id="lastName"
+                                                                                                            autocomplete=" family-name"
+                                                                                                            placeholder="Enter last name">
+                                                                                                    </div>
 
 
                                                                                                     <div
                                                                                                         class="form-group">
-                                                                                                        <label  class=" control-label  required"
+                                                                                                        <label
+                                                                                                            class=" control-label  required"
                                                                                                             for="email">Email
                                                                                                             address</label>
                                                                                                         <input
@@ -1128,21 +1150,22 @@ if(field.is_null!=="1"){
                                                                                                             aria-describedby="emailHelp"
                                                                                                             placeholder="Enter email">
                                                                                                     </div>
-                                                                                             <!--       <div
-                                                                                                        class="form-group">
-                                                                                                        <label
-                                                                                                            for="username">User
-                                                                                                            Name</label>
-                                                                                                        <input
-                                                                                                            type="text"
-                                                                                                            name="username"
-                                                                                                            class="form-control"
-                                                                                                            id="username"
-                                                                                                            placeholder="User name">
-                                                                                                    </div> -->
+                                                                                                    <!--       <div
+                                                                                                               class="form-group">
+                                                                                                               <label
+                                                                                                                   for="username">User
+                                                                                                                   Name</label>
+                                                                                                               <input
+                                                                                                                   type="text"
+                                                                                                                   name="username"
+                                                                                                                   class="form-control"
+                                                                                                                   id="username"
+                                                                                                                   placeholder="User name">
+                                                                                                           </div> -->
                                                                                                     <div
                                                                                                         class="form-group">
-                                                                                                        <label class=" control-label  required"
+                                                                                                        <label
+                                                                                                            class=" control-label  required"
                                                                                                             for="phone">Phone</label>
                                                                                                         <input
                                                                                                             type="text"
@@ -1151,8 +1174,6 @@ if(field.is_null!=="1"){
                                                                                                             id="phone"
                                                                                                             placeholder="Phone">
                                                                                                     </div>
-
-
 
 
                                                                                                     <input type="hidden"
@@ -1166,10 +1187,22 @@ if(field.is_null!=="1"){
 
 
                                                                                                 <div class="form-group">
-                                                                                                    <label class="control-label required" for="acceptTOS" role="button" >I agree to the following terms:</label>
-                                                                                                    <div class="custom-checkbox">
-                                                                                                        <input type="checkbox" name="acceptTOS" id="acceptTOS" value="1">
-                                                                                                        <div class="custom-label"></div>
+                                                                                                    <label
+                                                                                                        class="control-label required"
+                                                                                                        for="acceptTOS"
+                                                                                                        role="button">I
+                                                                                                        agree to the
+                                                                                                        following
+                                                                                                        terms:</label>
+                                                                                                    <div
+                                                                                                        class="custom-checkbox">
+                                                                                                        <input
+                                                                                                            type="checkbox"
+                                                                                                            name="acceptTOS"
+                                                                                                            id="acceptTOS"
+                                                                                                            value="1">
+                                                                                                        <div
+                                                                                                            class="custom-label"></div>
 
                                                                                                     </div>
                                                                                                     <div><p style="
@@ -1177,10 +1210,63 @@ if(field.is_null!=="1"){
     margin-top: 20px;
     margin-bottom: 15px;
 "
-                                                                                                        >Cancellation Policy:</p>
-                                                                                                        <p>All cancellations must be processed at least 24 hours in advance in order to receive a full refund. Any cancellations within 24 hours of the appointment will not warrant any full or partial refund.</p></div>
+                                                                                                        >Cancellation
+                                                                                                            Policy:</p>
+                                                                                                        <p>All
+                                                                                                            cancellations
+                                                                                                            must be
+                                                                                                            processed at
+                                                                                                            least 24
+                                                                                                            hours in
+                                                                                                            advance in
+                                                                                                            order to
+                                                                                                            receive a
+                                                                                                            full refund.
+                                                                                                            Any
+                                                                                                            cancellations
+                                                                                                            within 24
+                                                                                                            hours of the
+                                                                                                            appointment
+                                                                                                            will not
+                                                                                                            warrant any
+                                                                                                            full or
+                                                                                                            partial
+                                                                                                            refund.</p>
+                                                                                                    </div>
                                                                                                 </div>
 
+
+                                                                                                <div
+                                                                                                    class="buttons-container"
+                                                                                                    style="text-align: center;">
+                                                                                                    <div
+                                                                                                        class="sb-book-btn-container StartBooking">
+                                                                                                        <div
+                                                                                                            class="btn"
+                                                                                                            style="background: #9c00f7;    color: white;"
+                                                                                                            role="button"
+                                                                                                            tabindex="0">
+
+
+                                                                                                            <button
+                                                                                                                style="
+    background-color: transparent;
+    border: none;
+"
+
+
+                                                                                                                type="button">
+
+                                         <span>
+                                                                                                    Confirm booking
+
+                                           </span>
+                                                                                                            </button>
+
+
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
 
 
                                                                                             </div>
@@ -1227,7 +1313,7 @@ if(field.is_null!=="1"){
                                                                                                                 </td>
                                                                                                                 <td class="info"
                                                                                                                     id="bookingInfoDate">
-                                                                                                                    <?php echo date("d.m.Y");?>
+                                                                                                                    <?php echo date("d.m.Y"); ?>
                                                                                                                 </td>
                                                                                                             </tr>
 
@@ -1351,11 +1437,13 @@ if(field.is_null!=="1"){
                                                                                         <div
                                                                                             id="sb_multiple_booking_button_container"></div>
                                                                                         <div
-                                                                                            class="sb-book-btn-container">
-                                                                                            <div id="sb_book_btn"
-                                                                                                 class="btn"
-                                                                                                 role="button"
-                                                                                                 tabindex="0">
+                                                                                            class="sb-book-btn-container StartBooking">
+                                                                                            <div
+                                                                                                class="btn"
+                                                                                                style="background: #9c00f7;    color: white;"
+
+                                                                                                role="button"
+                                                                                                tabindex="1">
 
 
                                                                                                 <button
@@ -1363,7 +1451,7 @@ if(field.is_null!=="1"){
     background-color: transparent;
     border: none;
 "
-                                                                                                    id="StartBooking"
+
                                                                                                     type="button">
 
                                          <span>

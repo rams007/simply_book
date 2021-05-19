@@ -117,7 +117,7 @@ class MainController extends Controller
         )); */
         $eventId = $request->eventId;
       //  $allAdditionalFields = $client->getAdditionalFields($eventId);
-        $allAdditionalFields =AdditionalFields::where('event_id',$eventId)->get(['field_id AS id','name','title','type','values','default','is_null','pos','value']);
+        $allAdditionalFields =AdditionalFields::where('event_id',$eventId)->orderBy('pos')->get(['field_id AS id','name','title','type','values','default','is_null','pos','value']);
         return response()->json(['allAdditionalFields' => $allAdditionalFields,]);
 
 
