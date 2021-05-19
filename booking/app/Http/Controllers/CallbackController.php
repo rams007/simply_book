@@ -94,83 +94,83 @@ class CallbackController extends Controller
                 case "create":
                     $sign = md5($request->booking_id . $request->booking_hash . env('API_SECRET'));
                     $bookingDetails = $client->getBookingDetails($request->booking_id, $sign);
-                    $dateParts= explode(" ",$bookingDetails->start_date_time);
+                    $dateParts = explode(" ", $bookingDetails->start_date_time);
                     $eventId = $bookingDetails->event_id;
-                    AvaliableDates::where('service_id',$eventId)->where('avaliable_date',$dateParts[0])->where('avaliable_time_start',$dateParts[1])->delete();
+                    AvaliableDates::where('service_id', $eventId)->where('avaliable_date', $dateParts[0])->where('avaliable_time_start', $dateParts[1])->delete();
 
-                   /*
-                   this can be used for sending emails
-                   $client = $bookingDetails->client_name;
-                    $client_email = $bookingDetails->client_email;
-                    $service = $bookingDetails->event_name;
-                    $start_date_time = strtotime($bookingDetails->start_date_time);
+                    /*
+                    this can be used for sending emails
+                    $client = $bookingDetails->client_name;
+                     $client_email = $bookingDetails->client_email;
+                     $service = $bookingDetails->event_name;
+                     $start_date_time = strtotime($bookingDetails->start_date_time);
 
-                    $date_start = date('Y-m-d', $start_date_time);
-                    $time_start = date('H:i:s', $start_date_time);
-                    $addres1 = "";
-                    $addres2 = "";
-                    foreach ($bookingDetails->additional_fields as $field) {
-                        if ($field->field_title === 'Address Line 1') {
-                            $addres1 = $field->value;
-                        } else if ($field->field_title === 'Address Line 2') {
-                            $addres2 = $field->value;
-                        }
-
-
-                    }
-
-                    $t = 1;
-                    //       exit();
-                    $html = '<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Confirm</title>
-  </head>
-
-  <body>
-<div style="width: 80%;margin: auto;border: 1px solid gray;padding: 33px;color: gray;">
-<h1 style="text-align: center;color: #9d9b9b;"> Appointment scheduled </h1>
-<h4 style="text-align: center;color: black;" > for [client] </h4><hr><table style="width: 100%;">
-<tr>
-<td style="width: 88px;" >What:</td>
-<td style="color: black;" >[service]</td>
-</tr>
-<tr>
-<td style="vertical-align: baseline;" >When:</td>
-<td style="color: black;" >[date_start] [time_start] <br>
-[date_list] </tr>
-<td style="width: 88px;" >Where:</td>
-<td style="color: black;" >[data_field_6]  [data_field_13]</td>
-</tr>
-
-</table>
-<p>Thanks for booking</p>
-<p >Looking forward to see you soon <8</p>
-<p style="text-align: center;"> <a href="[client_bookings_link]"><button style="background-color: #9c00f7; color: white; padding: 15px;  font-size: 18px; font-family: Arial;"> RESCHEDULE/EDIT </button></a></p>
-</div>
-  </body>
-</html>';
-
-                    $html = str_replace('[client]', $client, $html);
-                    $html = str_replace('[service]', $service, $html);
-                    $html = str_replace('[date_start]', $date_start, $html);
-                    $html = str_replace('[time_start]', $time_start, $html);
-                    $html = str_replace('[time_start]', $time_start, $html);
-                    $html = str_replace('[data_field_6]', $addres1, $html);
-                    $html = str_replace('[data_field_13]', $addres2, $html);
+                     $date_start = date('Y-m-d', $start_date_time);
+                     $time_start = date('H:i:s', $start_date_time);
+                     $addres1 = "";
+                     $addres2 = "";
+                     foreach ($bookingDetails->additional_fields as $field) {
+                         if ($field->field_title === 'Address Line 1') {
+                             $addres1 = $field->value;
+                         } else if ($field->field_title === 'Address Line 2') {
+                             $addres2 = $field->value;
+                         }
 
 
-                    $mg = Mailgun::create('key-7bf2f2e9b53986eb5d3e028b1ba96f00', 'https://api.eu.mailgun.net'); // For EU servers
-                    $mg->messages()->send('mg.miner-stats.com', [
-                        'from' => 'bob@example.com',
-                        'to' => $client_email,
-                        'subject' => 'Test from sdk',
-                        'html' => $html
-                    ]);
-*/
+                     }
+
+                     $t = 1;
+                     //       exit();
+                     $html = '<!DOCTYPE html>
+ <html lang="en">
+   <head>
+     <meta charset="utf-8" />
+     <meta http-equiv="x-ua-compatible" content="ie=edge" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <title>Confirm</title>
+   </head>
+
+   <body>
+ <div style="width: 80%;margin: auto;border: 1px solid gray;padding: 33px;color: gray;">
+ <h1 style="text-align: center;color: #9d9b9b;"> Appointment scheduled </h1>
+ <h4 style="text-align: center;color: black;" > for [client] </h4><hr><table style="width: 100%;">
+ <tr>
+ <td style="width: 88px;" >What:</td>
+ <td style="color: black;" >[service]</td>
+ </tr>
+ <tr>
+ <td style="vertical-align: baseline;" >When:</td>
+ <td style="color: black;" >[date_start] [time_start] <br>
+ [date_list] </tr>
+ <td style="width: 88px;" >Where:</td>
+ <td style="color: black;" >[data_field_6]  [data_field_13]</td>
+ </tr>
+
+ </table>
+ <p>Thanks for booking</p>
+ <p >Looking forward to see you soon <8</p>
+ <p style="text-align: center;"> <a href="[client_bookings_link]"><button style="background-color: #9c00f7; color: white; padding: 15px;  font-size: 18px; font-family: Arial;"> RESCHEDULE/EDIT </button></a></p>
+ </div>
+   </body>
+ </html>';
+
+                     $html = str_replace('[client]', $client, $html);
+                     $html = str_replace('[service]', $service, $html);
+                     $html = str_replace('[date_start]', $date_start, $html);
+                     $html = str_replace('[time_start]', $time_start, $html);
+                     $html = str_replace('[time_start]', $time_start, $html);
+                     $html = str_replace('[data_field_6]', $addres1, $html);
+                     $html = str_replace('[data_field_13]', $addres2, $html);
+
+
+                     $mg = Mailgun::create('key-7bf2f2e9b53986eb5d3e028b1ba96f00', 'https://api.eu.mailgun.net'); // For EU servers
+                     $mg->messages()->send('mg.miner-stats.com', [
+                         'from' => 'bob@example.com',
+                         'to' => $client_email,
+                         'subject' => 'Test from sdk',
+                         'html' => $html
+                     ]);
+ */
 
                     break;
 
@@ -179,7 +179,18 @@ class CallbackController extends Controller
                     break;
 
                 case "cancel":
+                    $sign = md5($request->booking_id . $request->booking_hash . env('API_SECRET'));
+                    $bookingDetails = $client->getBookingDetails($request->booking_id, $sign);
+                    $dateParts = explode(" ", $bookingDetails->start_date_time);
+                    $eventId = $bookingDetails->event_id;
+                    try {
+                        AvaliableDates::create(['service_id' => $eventId,
+                            'avaliable_date' => $dateParts[0],
+                            'avaliable_time_start' => $dateParts[1]
+                        ]);
+                    } catch (\Throwable $e) {
 
+                    }
                     break;
 
                 case "remind":
