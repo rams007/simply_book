@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\DeleteUpaidBooking',
         'App\Console\Commands\updateAvaliableDates',
         'App\Console\Commands\updateAdditionalFields',
+        'App\Console\Commands\updateSubscriptions',
     ];
 
     /**
@@ -31,6 +32,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('updateAdditionalFields')->twiceDaily()->sendOutputTo(storage_path() . '/logs/cron/updateAdditionalFields.log');
         $schedule->command('DeleteUpaidBooking')->everyMinute()->sendOutputTo(storage_path() . '/logs/cron/DeleteUpaidBooking.log');
         $schedule->command('updateAvaliableDates')->everyFifteenMinutes()->sendOutputTo(storage_path() . '/logs/cron/updateAvaliableDates.log');
+        $schedule->command('updateSubscriptions')->everyFourHours()->sendOutputTo(storage_path() . '/logs/cron/updateSubscriptions.log');
     }
 
 
