@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Subsriptions;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use App\Models\CreatedBookings;
@@ -228,7 +229,14 @@ class WatchBookingStatus extends Command
                 }
 
                 if (!empty($bookings)) {
-                    $t = 2;
+
+                    $subscription = Subsriptions::where('subscription_id',$bookings[0]->booking_id)->first();
+                    if($subscription){
+                        if($subscription->status ==='cancelled'){
+                            echo 'For client=' . $clientId . ' and service =' . $serviceId . ' we have cancelled subscription. Skip it.';
+                            continue;
+                        }
+                    }
                     //need create array of all avaliable dates and time  where book must be placed
                     $allAvaliableDates = [];
                     $repeatCount = $service->recurring_settings->repeat_count;
