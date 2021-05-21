@@ -125,5 +125,15 @@ class updateAvaliableDates extends Command
                 $er = $e->getMessage();
             }
         }
+
+        foreach ($mustDeleteRecords as $date) {
+            try {
+                AvaliableDates::where('service_id', $date['eventId'])->where('avaliable_date', $date['date'])->where('avaliable_time_start', $date['time'])->delete();
+
+            } catch (\Throwable $e) {
+                $er = $e->getMessage();
+            }
+
+        }
     }
 }
