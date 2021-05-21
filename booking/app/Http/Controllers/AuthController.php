@@ -39,7 +39,6 @@ class AuthController extends Controller
                     $userRecord->save();
                 }
             }
-            $t = 1;
             return response()->json(['error' => false, 'msg' => 'Logined', 'userData' => $user]);
         } catch (\Throwable $e) {
             return response()->json(['error' => true, 'msg' => $e->getMessage()]);

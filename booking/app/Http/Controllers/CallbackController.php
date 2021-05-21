@@ -70,15 +70,8 @@ class CallbackController extends Controller
     public function SimplyBookCallback(Request $request)
     {
 
-        //    $rawData = file_get_contents("php://input");
         Log::debug('Simplybook ' . print_r($request->all(), true));
-        //     Log::debug('Simplybook2 '.print_r($rawData,true));
 
-        /*      [booking_id] => 733
-          [booking_hash] => 3d9b97d502e002b6ccae5bf8e0b489ef
-              [company] => lingeriehousekeeper
-              [notification_type] => create
-              */
         try {
             $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
             $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
@@ -89,7 +82,7 @@ class CallbackController extends Controller
                 )
             ));
 
-
+            //@todo if we need later we can handle emails on our end
             switch ($request->notification_type) {
                 case "create":
                     $sign = md5($request->booking_id . $request->booking_hash . env('API_SECRET'));
@@ -206,8 +199,6 @@ class CallbackController extends Controller
         } catch (\Throwable $e) {
 
         }
-
-
         return response()->json(['error' => false]);
     }
 }

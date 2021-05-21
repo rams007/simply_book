@@ -107,20 +107,9 @@ class MainController extends Controller
 
     public function getCustomFields(Request $request)
     {
-    /*    $loginClient = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
-        $token = $loginClient->getToken(env('COMPANY_LOGIN'), env('API_KEY'));
-        $client = new JsonRpcClient('https://user-api.simplybook.me' . '/', array(
-            'headers' => array(
-                'X-Company-Login: ' . env('COMPANY_LOGIN'),
-                'X-Token: ' . $token
-            )
-        )); */
         $eventId = $request->eventId;
-      //  $allAdditionalFields = $client->getAdditionalFields($eventId);
-        $allAdditionalFields =AdditionalFields::where('event_id',$eventId)->orderBy('pos')->get(['field_id AS id','name','title','type','values','default','is_null','pos','value']);
+        $allAdditionalFields = AdditionalFields::where('event_id', $eventId)->orderBy('pos')->get(['field_id AS id', 'name', 'title', 'type', 'values', 'default', 'is_null', 'pos', 'value']);
         return response()->json(['allAdditionalFields' => $allAdditionalFields,]);
-
-
     }
 
     public function startBooking(Request $request)
@@ -138,21 +127,19 @@ class MainController extends Controller
 
         $hostedPageUrl = "";
         parse_str($request->formData, $formData);
-        //    print_r($formData);
         $additionalFields = $formData;
 
         if (empty($request->email)) {
             return response()->json(['error' => true, 'msg' => "Email field is required", 'hostedPageUrl' => ""]);
         }
         $clientData = array(
-            'name' => $request->firstName.' '.$request->lastName,
+            'name' => $request->firstName . ' ' . $request->lastName,
             'email' => $request->email,
             'phone' => $request->phone
         );
 
 
         //check if client exist
-
 
         $loginClientAdmin = new JsonRpcClient('https://user-api.simplybook.me' . '/login/');
         $tokenAdmin = $loginClientAdmin->getUserToken(env('COMPANY_LOGIN'), env('USER_LOGIN'), env('USER_PASSWORD'));
@@ -191,10 +178,6 @@ class MainController extends Controller
 
         }
 
-
-        $t = 1;
-
-
         $eventId = $request->eventId;
         $unitId = 1;
         $date = $request->selectedDay;
@@ -202,7 +185,6 @@ class MainController extends Controller
         try {
             $bookingsInfo = $client->book($eventId, $unitId, $date, $time, $clientData, $additionalFields);
 
-            $t = 1;
             $bookIdList = "";
             try {
                 if (empty($errorMsg)) {
@@ -228,10 +210,8 @@ class MainController extends Controller
                         $bookIdList .= $record->id . ",";
                     }
                 }
-                $t = 2;
             } catch (\Throwable $e) {
                 $errorMsg = $e->getMessage();
-                $t = 3;
             }
 
             //HARDCODED ID of events and links to chargebee
@@ -266,102 +246,12 @@ class MainController extends Controller
                 $hostedPageUrl .= "?subscription[cf_bookid]=" . $batchId->id . "&customer[email]=" . $request->email;
             }
 
-
-            //  https://testrams-test.chargebee.com/hosted_pages/plans/one-time-cleaning
-            // https://testrams-test.chargebee.com/hosted_pages/plans/recuring-cleaning
-            //https://testrams-test.chargebee.com/hosted_pages/plans/monthly_weekly_cleaning
-            // https://testrams-test.chargebee.com/hosted_pages/plans/daily_cleaning
-            // https://testrams-test.chargebee.com/hosted_pages/plans/be_weekly_cleaning
-            /*
-            stdClass Object
-     (
-         [require_confirm] =>
-         [bookings] => Array
-             (
-                 [0] => stdClass Object
-                     (
-                         [id] => 1
-                         [event_id] => 1
-                         [unit_id] => 1
-                         [client_id] => 2
-                         [client_hash] => e24fe7f5cc137e8e2df214b8694d17c0
-                         [start_date_time] => 2021-04-22 09:00:00
-                         [end_date_time] => 2021-04-22 10:00:00
-                         [time_offset] => 0
-                         [is_confirmed] => 1
-                         [require_payment] =>
-                         [code] => nhy0pky
-                         [hash] => 56c1c5926b01a4a099704bec3b9c2bdb
-                     )
-
-                 [1] => stdClass Object
-                     (
-                         [id] => 2
-                         [event_id] => 1
-                         [unit_id] => 1
-                         [client_id] => 2
-                         [client_hash] => e24fe7f5cc137e8e2df214b8694d17c0
-                         [start_date_time] => 2021-04-29 09:00:00
-                         [end_date_time] => 2021-04-29 10:00:00
-                         [time_offset] => 0
-                         [is_confirmed] => 1
-                         [require_payment] =>
-                         [code] => nhy1ho3
-                         [hash] => 604fd51c819202e972311b8a2bfd1b54
-                     )
-
-                 [2] => stdClass Object
-                     (
-                         [id] => 3
-                         [event_id] => 1
-                         [unit_id] => 1
-                         [client_id] => 2
-                         [client_hash] => e24fe7f5cc137e8e2df214b8694d17c0
-                         [start_date_time] => 2021-05-06 09:00:00
-                         [end_date_time] => 2021-05-06 10:00:00
-                         [time_offset] => 0
-                         [is_confirmed] => 1
-                         [require_payment] =>
-                         [code] => nhy26v2
-                         [hash] => 9646cad9218bb605bda44729812a39d5
-                     )
-
-                 [3] => stdClass Object
-                     (
-                         [id] => 4
-                         [event_id] => 1
-                         [unit_id] => 1
-                         [client_id] => 2
-                         [client_hash] => e24fe7f5cc137e8e2df214b8694d17c0
-                         [start_date_time] => 2021-05-13 09:00:00
-                         [end_date_time] => 2021-05-13 10:00:00
-                         [time_offset] => 0
-                         [is_confirmed] => 1
-                         [require_payment] =>
-                         [code] => nhy35el
-                         [hash] => 3fc9d215637cfa688ed5e4adc6a5ec35
-                     )
-
-             )
-
-         [batch_type] => batch_recurrent_booking
-         [recurrent_batch_id] => 1
-         [batch_hash] => 357178bce290381bb7235080941ec143
-         [invoice] =>
-     )
-
-
-            */
         } catch (\Throwable $e) {
-            //       echo $e->getMessage();
             $errorMsg = $e->getMessage();
             if ($e->getMessage() == 'Request error: Selected time start is not available') {
                 //we need another date
             }
         }
-
-
-        $t = 1;
 
         if (empty($errorMsg)) {
             $IsError = false;
@@ -425,7 +315,6 @@ class MainController extends Controller
                         }
 
                         if ($dateAvaliable) {
-                            //    $listAvaliableTimes[$validatedTime] = 1;
                             $avaliableDates[$validatedDate][] = $validatedTime;
                         }
                         break;
@@ -460,7 +349,6 @@ class MainController extends Controller
                         }
 
                         if ($dateAvaliable) {
-                            //    $listAvaliableTimes[$validatedTime] = 1;
                             $avaliableDates[$validatedDate][] = $validatedTime;
                         }
 
