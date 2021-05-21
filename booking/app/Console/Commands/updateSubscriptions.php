@@ -21,7 +21,7 @@ class updateSubscriptions extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Update all existed subscription statuses';
 
     /**
      * Create a new command instance.
@@ -51,7 +51,6 @@ class updateSubscriptions extends Command
             $offcet = $all->nextOffset();
             foreach ($all as $entry) {
                 $subscription = $entry->subscription();
-                //    $customer = $entry->customer();
                 $user = Subsriptions::firstOrNew([
                     'subscription_id' => $subscription->id,
                     'plan_id' => $subscription->planId,

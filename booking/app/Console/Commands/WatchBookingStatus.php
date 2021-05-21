@@ -74,124 +74,11 @@ class WatchBookingStatus extends Command
                 'X-User-Token: ' . $tokenAdmin
             )
         ));
-        /*
-                $sign = md5("7333d9b97d502e002b6ccae5bf8e0b489ef" . env('API_SECRET'));
-                $bookingDetails = $client->getBookingDetails(733, $sign);
 
-                $client = $bookingDetails->client_name;
-                $client_email = $bookingDetails->client_email;
-                $service = $bookingDetails->event_name;
-                $start_date_time = strtotime($bookingDetails->start_date_time);
-
-                $date_start = date('Y-m-d', $start_date_time);
-                $time_start = date('H:i:s', $start_date_time);
-                $addres1 = "";
-                $addres2 = "";
-                foreach ($bookingDetails->additional_fields as $field) {
-                    if ($field->field_title === 'Address Line 1') {
-                        $addres1 = $field->value;
-                    } else if ($field->field_title === 'Address Line 2') {
-                        $addres2 = $field->value;
-                    }
-
-
-                }
-
-                $clientId=$bookingDetails->client_id;
-
-                $clentDetails = $clientAdmin->getClientList ();
-                $hashes=[];
-                $sign=[];
-        foreach($clentDetails as $c){
-            $clientId=$c->id;
-
-            $cd = $clientAdmin->getClientInfo($clientId);
-            $hashes[]=$cd->client_hash;
-            $sign[]= md5($clientId . $cd->client_hash . env('API_SECRET'));
-        }
-        $t=2;
-
-                $t = 1;
-                $sign = md5($clientId . $clentDetails->client_hash .  env('API_SECRET'));
-
-
-
-                $html = '<!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="utf-8" />
-            <meta http-equiv="x-ua-compatible" content="ie=edge" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>Confirm</title>
-          </head>
-
-          <body>
-        <div style="width: 80%;margin: auto;border: 1px solid gray;padding: 33px;color: gray;">
-        <h1 style="text-align: center;color: #9d9b9b;"> Appointment scheduled </h1>
-        <h4 style="text-align: center;color: black;" > for [client] </h4><hr><table style="width: 100%;">
-        <tr>
-        <td style="width: 88px;" >What:</td>
-        <td style="color: black;" >[service]</td>
-        </tr>
-        <tr>
-        <td style="vertical-align: baseline;" >When:</td>
-        <td style="color: black;" >[date_start] [time_start] <br>
-        [date_list] </tr>
-        <td style="width: 88px;" >Where:</td>
-        <td style="color: black;" >[data_field_6]  [data_field_13]</td>
-        </tr>
-
-        </table>
-        <p>Thanks for booking</p>
-        <p >Looking forward to see you soon <8</p>
-        <p style="text-align: center;"> <a href="[client_bookings_link]"><button style="background-color: #9c00f7; color: white; padding: 15px;  font-size: 18px; font-family: Arial;"> RESCHEDULE/EDIT </button></a></p>
-        </div>
-          </body>
-        </html>';
-
-                $html = str_replace('[client]', $client, $html);
-                $html = str_replace('[service]', $service, $html);
-                $html = str_replace('[date_start]', $date_start, $html);
-                $html = str_replace('[time_start]', $time_start, $html);
-                $html = str_replace('[time_start]', $time_start, $html);
-                $html = str_replace('[data_field_6]', $addres1, $html);
-                $html = str_replace('[data_field_13]', $addres2, $html);
-
-
-                $mg = Mailgun::create('key-7bf2f2e9b53986eb5d3e028b1ba96f00', 'https://api.eu.mailgun.net'); // For EU servers
-                $mg->messages()->send('mg.miner-stats.com', [
-                    'from' => 'bob@example.com',
-                    'to' => $client_email,
-                    'subject' => 'Test from sdk',
-                    'html' => $html
-                ]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-                exit();
-                */
         $services = $client->getEventList();
-
         $clients = $clientAdmin->getClientList("", null);
-        $t = 1;
-
 
         $allAdditionalFields = $client->getAdditionalFields(EXTENDED_SERVICE_ID);
-
-//$c = $clientAdmin->getClientInfo(1);
-
-        //   $t = $clientAdmin->getBookingDetails (350);
-
         foreach ($services as $service) {
             if ($service->is_recurring === "0") {
                 continue;
@@ -230,9 +117,9 @@ class WatchBookingStatus extends Command
 
                 if (!empty($bookings)) {
 
-                    $subscription = Subsriptions::where('subscription_id',$bookings[0]->booking_id)->first();
-                    if($subscription){
-                        if($subscription->status ==='cancelled'){
+                    $subscription = Subsriptions::where('subscription_id', $bookings[0]->booking_id)->first();
+                    if ($subscription) {
+                        if ($subscription->status === 'cancelled') {
                             echo 'For client=' . $clientId . ' and service =' . $serviceId . ' we have cancelled subscription. Skip it.';
                             continue;
                         }
@@ -249,11 +136,6 @@ class WatchBookingStatus extends Command
                     $startedHours = $bookingStartTime->hour;
                     $startedMins = $bookingStartTime->minute;
 
-                    $bookingEndTime = Carbon::parse($bookings[0]->end_date);
-                    $endedHours = $bookingEndTime->hour;
-                    $endedMins = $bookingEndTime->minute;
-
-
                     $startedDateForCheck = Carbon::now();
                     $startedDateForCheck->hour = $startedHours;
                     $startedDateForCheck->minute = $startedMins;
@@ -262,12 +144,6 @@ class WatchBookingStatus extends Command
                     while ($startedDateForCheck->isPast()) {
                         $startedDateForCheck->addDays(1);
                     }
-
-                    /*      $endDateForCheck = $startedDateForCheck->copy();
-                          $endDateForCheck->hour = $endedHours;
-                          $endDateForCheck->minute = $endedMins;
-                          $endDateForCheck->second = 0;
-      */
 
                     if ($service->recurring_settings->type === "weekly") {
                         do {
@@ -292,9 +168,6 @@ class WatchBookingStatus extends Command
                             return $k['start_date'] !== $book->start_date;
                         });
                     }
-
-
-                    $t = 2;
 
                     //if we dont - try create book
 
@@ -352,11 +225,9 @@ class WatchBookingStatus extends Command
                         $error = '';
                         try {
                             $bookingsInfo = $client->book(EXTENDED_SERVICE_ID, UNIT_ID, $date, $time, $clientData, $additionalFields);
-                            $t = 2;
                         } catch (\Throwable $e) {
                             $error = $e->getMessage();
                             echo $error;
-                            $t = 3;
                             if ($error === 'Request error: Selected time start is not available') {
                                 Log::debug($clientData['client_id'] . ' cant create book on ' . $date . ' ' . $time);
                                 break;
@@ -385,55 +256,19 @@ class WatchBookingStatus extends Command
 
                             }
 
-                            $t = 2;
                         } catch (\Throwable $e) {
                             $error = $e->getMessage();
-                            $t = 3;
+
                         }
-                        /*
-                         stdClass Object
-    (
-        [require_confirm] =>
-        [bookings] => Array
-            (
-                [0] => stdClass Object
-                    (
-                        [id] => 289
-                        [event_id] => 7
-                        [unit_id] => 1
-                        [client_id] => 1
-                        [client_hash] => e6b09a1b4b2ff7210e65cf6649ed24ae
-                        [start_date_time] => 2021-04-28 13:00:00
-                        [end_date_time] => 2021-04-28 15:00:00
-                        [time_offset] => 0
-                        [is_confirmed] => 1
-                        [require_payment] =>
-                        [code] => nhy7wkg3
-                        [hash] => c6db56489de495f6807cf06f594d671d
-                    )
-
-            )
-
-        [invoice] =>
-    )
-
-                         */
-
-
                     }
 
-
                     //on error log event and  go to next
-
+                    if (!empty($error)) {
+                        Log::debug("We got error in watch booking status " . $error);
+                    }
 
                 }
-
-
             }
-
-
-            $t = 2;
         }
-
     }
 }

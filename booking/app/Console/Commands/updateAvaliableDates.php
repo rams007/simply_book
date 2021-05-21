@@ -115,9 +115,6 @@ class updateAvaliableDates extends Command
             }
         }
 
-        //     $result = array_diff($allAwaliableDates, $allAvaliableSaved);
-        //       $result2 = array_diff($allAvaliableSaved, $allAwaliableDates);
-
         foreach ($newRecords as $date) {
             try {
                 AvaliableDates::create(['service_id' => $date['eventId'],

@@ -20,7 +20,7 @@ class updateAdditionalFields extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Get list of all additional fields and store it in our database';
 
     /**
      * Create a new command instance.
